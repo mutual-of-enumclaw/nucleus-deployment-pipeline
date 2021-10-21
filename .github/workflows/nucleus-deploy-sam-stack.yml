@@ -1,0 +1,54 @@
+name: Nucleus reusable build and deploy SAM stack
+
+on:
+  workflow_call:
+    inputs:
+      region:
+        description: 'AWS Region'
+        required: true
+        default: 'us-west-2'
+        type: string
+      environment_name:
+        description: 'Environment Name'
+        required: true
+        default: 'snd'
+        type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+
+jobs:
+  deploy:
+    name: Deploy stack to AWS
+    runs-on: ubuntu-latest
+    outputs:
+      env-name: ${{ steps.env-name.outputs.environment }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    
+    - name: Microsoft Teams Deploy Card
+      uses: toko-bifrost/ms-teams-deploy-card@3.1.2
+      if: always()
+      with:
+        github-token: ${{ github.token }}
+        webhook-uri: ${{ secrets.MS_TEAMS_WEBHOOK_URI }}
+        show-on-failure: 'true'
+        show-on-exit: 'true'
+
+    - name: Configure AWS credentials
+      id: creds
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ inputs.region}} 
+    
+    - run: npm ci
+    - run: npx samtsc --build-only --config-env ${{ inputs.environment_name }}
+    
+    - name: SAM Deploy
+      # for each env template we would change this from default to match the variables in the sameconfig.toml section.
+      run: npx samtsc --deploy-only --config-env ${{ inputs.environment_name }}
