@@ -37,8 +37,6 @@ jobs:
       with:
         github-token: ${{ github.token }}
         webhook-uri: ${{ secrets.MS_TEAMS_WEBHOOK_URI }}
-        show-on-failure: 'true'
-        show-on-exit: 'true'
 
     - name: Configure AWS credentials
       id: creds
