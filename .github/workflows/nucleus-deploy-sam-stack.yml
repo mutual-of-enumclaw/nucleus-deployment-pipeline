@@ -37,7 +37,10 @@ jobs:
       with:
         github-token: ${{ github.token }}
         webhook-uri: ${{ secrets.MS_TEAMS_WEBHOOK_URI }}
-        card-layout-exit: complete 
+        card-layout-exit: complete
+        custom-facts: |
+          - name: Environment
+            value: ${{ inputs.environment_name }}
 
     - name: Configure AWS credentials
       id: creds
