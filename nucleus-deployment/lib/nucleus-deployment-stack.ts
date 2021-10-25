@@ -1,6 +1,7 @@
 import * as cdk from '@aws-cdk/core';
 import * as codebuild from '@aws-cdk/aws-codebuild';
 import * as s3 from '@aws-cdk/aws-s3';
+import * as iam from '@aws-cdk/aws-iam';
 
 export class NucleusDeploymentStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
@@ -12,9 +13,15 @@ export class NucleusDeploymentStack extends cdk.Stack {
 
     // The code that defines your stack goes here
     new codebuild.Project(this, 'NucleusDeployment', {
+      projectName: "nucleus-status-deployment",
       environment: {
-        buildImage: codebuild.LinuxBuildImage.STANDARD_2_0,
+        buildImage: codebuild.LinuxBuildImage.AMAZON_LINUX_2_3
       },
+      role: iam.Role.fromRoleArn(
+        this,
+        "code-build-project-role",
+        "arn:aws:iam::025658654491:role/CodeBuild-build-promotion-snd"
+      ),
       source: codebuild.Source.gitHub({
         owner: "mutual-of-enumclaw",
         repo: "nucleus-status",
