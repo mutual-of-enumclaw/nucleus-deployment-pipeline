@@ -30,6 +30,13 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+      
+    - name: 'Create .npmrc'
+      shell: bash
+      run: |
+        echo "registry=https://moetech.jfrog.io/artifactory/api/npm/npm/" > .npmrc
+        echo "_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> .npmrc
+        echo "always-auth = true" >> .npmrc
     
     - name: Microsoft Teams Deploy Card
       uses: patrickpaulin/ms-teams-deploy-card@master
