@@ -1,0 +1,59 @@
+
+name: Merge changes
+
+on:
+  workflow_call:
+    inputs:
+      banch-from:
+        description: 'base branch'
+        required: true
+        default: 'dev'
+        type: string
+      banch-to:
+        description: 'target branch'
+        required: true
+        default: 'tst'
+        type: string
+    secrets:
+      DEPLOY_USER_GITHUB_TOKEN:
+        required: true
+  
+   
+jobs:
+  merge-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}
+      - name: Merge dev to tst
+        shell: bash
+        id: vars
+        env:
+          REPO: ${{ github.repository }}
+          HASH: ${{ github.sha }}
+          REF: ${{ github.ref }}
+        run: |
+          from="dev"
+          to="tst"
+          pullData()
+          {
+            repo=$1
+            name=$2
+            echo "Starting $name"
+            git config  --global user.name "Nucleus-Build-User"
+            git config  --global user.email "nucleus@mutualofenumclaw.com"
+            git config  --global pull.rebase false
+            git clone $repo $name
+            cd $name
+            echo "Checking out branch $to"
+            git checkout $to
+            git pull
+            echo "Pulling branch $from"
+            git pull --no-rebase origin $from -X theirs
+            echo "Pushing updates"
+            git push
+            cd ..
+          }
+          # call pull data with each repo we want to merge from dev-tst
+          pullData "https://${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}@github.com/mutual-of-enumclaw/nucleus-status.git" "status"
