@@ -44,8 +44,8 @@ jobs:
           HASH: ${{ github.sha }}
           REF: ${{ github.ref }}
         run: |
-          from=${{ inputs.branch-from}}
-          to=${{ inputs.branch-to}}
+          from="${{ inputs.branch-from}}"
+          to="${{ inputs.branch-to}}"
           pullData()
           {
             repo=$1
@@ -66,4 +66,4 @@ jobs:
             cd ..
           }
           # call pull data with each repo we want to merge 
-          pullData "https://${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}@github.com/mutual-of-enumclaw/${{ inputs.repo-name:}} "${{ inputs.folder-name:}}"
+          pullData "https://${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}@github.com/mutual-of-enumclaw/${{ inputs.repo-name}} "${{ inputs.folder-name}}"
