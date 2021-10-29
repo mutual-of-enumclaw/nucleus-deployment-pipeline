@@ -66,4 +66,4 @@ jobs:
             cd ..
           }
           # call pull data with each repo we want to merge 
-          pullData "https://${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}@github.com/mutual-of-enumclaw/${{ inputs.repo-name}} "${{ inputs.folder-name}}"
+          pullData "https://${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}@github.com/mutual-of-enumclaw/${{ inputs.repo-name}}" "${{ inputs.folder-name}}"
