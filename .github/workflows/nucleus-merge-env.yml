@@ -14,11 +14,6 @@ on:
         required: false
         default: 'tst'
         type: string
-      repo-name:
-        description: 'name or repo such as nucleus-status.git'
-        required: true
-        default: ''
-        type: string
     secrets:
       DEPLOY_USER_GITHUB_TOKEN:
         required: true
