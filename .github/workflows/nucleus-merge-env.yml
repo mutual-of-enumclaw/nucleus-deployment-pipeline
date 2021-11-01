@@ -6,12 +6,12 @@ on:
     inputs:
       branch-from:
         description: 'base branch'
-        required: true
+        required: false
         default: 'dev'
         type: string
       branch-to:
         description: 'target branch'
-        required: true
+        required: false
         default: 'tst'
         type: string
       repo-name:
@@ -21,7 +21,7 @@ on:
         type: string
       folder-name:
         description: 'name of folder to clone to such as status'
-        required: true
+        required: false
         default: 'nucleus'
         type: string
     secrets:
