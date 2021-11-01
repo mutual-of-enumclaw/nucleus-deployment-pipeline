@@ -20,14 +20,14 @@ on:
   
    
 jobs:
-runs-on: ubuntu-latest
-  steps:
-    - uses: actions/checkout@master
+  runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
 
-    - name: Merge dev -> tst
-      uses: devmasx/merge-branch@master
-      with:
-        type: now
-        from_branch: ${{ inputs.branch-from }}
-        target_branch: ${{ inputs.branch-to }}
-        github_token: ${{ github.token }}
+      - name: Merge dev -> tst
+        uses: devmasx/merge-branch@master
+        with:
+          type: now
+          from_branch: ${{ inputs.branch-from }}
+          target_branch: ${{ inputs.branch-to }}
+          github_token: ${{ github.token }}
