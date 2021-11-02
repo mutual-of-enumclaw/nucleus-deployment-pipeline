@@ -40,7 +40,7 @@ jobs:
           git config  --global user.name "Nucleus-Build-User"
           git config  --global user.email "nucleus@mutualofenumclaw.com"
           git config  --global pull.rebase false
-          git clone https://github.com/${{ github.repository }}.git ${{ github.repository }}
+          git clone https://${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}@github.com/${{ github.repository }}.git ${{ github.repository }}
           cd ${{ github.repository }}
           echo "Checking out branch $to"
           git checkout $to
