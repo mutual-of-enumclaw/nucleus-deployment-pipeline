@@ -16,19 +16,38 @@ on:
         type: string
     secrets:
       DEPLOY_USER_GITHUB_TOKEN:
-        required: true
-  
+        required: true  
    
 jobs:
   merge-branch:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
-
-      - name: Merge dev -> tst
-        uses: devmasx/merge-branch@master
+      - uses: actions/checkout@v2
         with:
-          type: now
-          from_branch: ${{ inputs.branch-from }}
-          target_branch: ${{ inputs.branch-to }}
-          github_token: ${{ github.token }}
+          token: ${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}
+      - run: echo ::set-env name=REPOSITORY_NAME::$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//")
+        shell: bash
+      - name: Merge dev to tst
+        shell: bash
+        id: vars
+        env:
+          REPO: ${{ github.repository }}
+          HASH: ${{ github.sha }}
+          REF: ${{ github.ref }}
+        run: |
+          from="${{ inputs.branch-from}}"
+          to="${{ inputs.branch-to}}"
+          repo="${{ github.repository }}"
+          echo "Starting $repo"
+          git config  --global user.name "Nucleus-Build-User"
+          git config  --global user.email "nucleus@mutualofenumclaw.com"
+          git config  --global pull.rebase false
+          git clone "https://github.com/${{ github.repository }}.git"
+          cd $REPOSITORY_NAME
+          echo "Checking out branch $to"
+          git checkout $to
+          git pull
+          echo "Pulling branch $from"
+          git pull --no-rebase origin $from -X theirs
+          echo "Pushing updates"
+          git push
