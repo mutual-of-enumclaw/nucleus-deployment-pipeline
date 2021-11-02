@@ -47,6 +47,7 @@ jobs:
         github-token: ${{ github.token }}
         webhook-uri: ${{ secrets.MS_TEAMS_WEBHOOK_URI }}
         card-layout-exit: complete
+        show-on-start: false
         custom-facts: |
           - name: Environment
             value: ${{ inputs.environment_name }}
