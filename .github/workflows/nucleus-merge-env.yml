@@ -14,6 +14,11 @@ on:
         required: false
         default: 'tst'
         type: string
+      repo-name:
+        description: 'deprecated'
+        required: false
+        default: ''
+        type: string
     secrets:
       DEPLOY_USER_GITHUB_TOKEN:
         required: true  
