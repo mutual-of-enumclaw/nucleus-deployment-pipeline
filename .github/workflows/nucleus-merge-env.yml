@@ -15,19 +15,13 @@ on:
         default: 'tst'
         type: string
       repo-name:
-        description: 'name or repo such as nucleus-status.git'
-        required: true
-        default: ''
-        type: string
-      folder-name:
-        description: 'name of folder to clone to such as status'
+        description: 'deprecated'
         required: false
-        default: 'nucleus'
+        default: ''
         type: string
     secrets:
       DEPLOY_USER_GITHUB_TOKEN:
-        required: true
-  
+        required: true  
    
 jobs:
   merge-branch:
@@ -46,24 +40,17 @@ jobs:
         run: |
           from="${{ inputs.branch-from}}"
           to="${{ inputs.branch-to}}"
-          pullData()
-          {
-            repo=$1
-            name=$2
-            echo "Starting $name"
-            git config  --global user.name "Nucleus-Build-User"
-            git config  --global user.email "nucleus@mutualofenumclaw.com"
-            git config  --global pull.rebase false
-            git clone $repo $name
-            cd $name
-            echo "Checking out branch $to"
-            git checkout $to
-            git pull
-            echo "Pulling branch $from"
-            git pull --no-rebase origin $from -X theirs
-            echo "Pushing updates"
-            git push
-            cd ..
-          }
-          # call pull data with each repo we want to merge 
-          pullData "https://${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}@github.com/mutual-of-enumclaw/${{ inputs.repo-name}}" "${{ inputs.folder-name}}"
+          repo="${{ github.repository }}"
+          echo "Starting $repo"
+          git config  --global user.name "Nucleus-Build-User"
+          git config  --global user.email "nucleus@mutualofenumclaw.com"
+          git config  --global pull.rebase false
+          git clone https://${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}@github.com/${{ github.repository }}.git ${{ github.repository }}
+          cd ${{ github.repository }}
+          echo "Checking out branch $to"
+          git checkout $to
+          git pull
+          echo "Pulling branch $from"
+          git pull --no-rebase origin $from -X theirs
+          echo "Pushing updates"
+          git push
