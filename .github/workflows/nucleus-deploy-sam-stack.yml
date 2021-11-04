@@ -60,7 +60,6 @@ jobs:
         aws-region: ${{ inputs.region}} 
     
     - run: npm ci
-    - run: npm run build -- --config-env ${{ inputs.environment_name }}
     
     - name: SAM Deploy
       # for each env template we would change this from default to match the variables in the sameconfig.toml section.
