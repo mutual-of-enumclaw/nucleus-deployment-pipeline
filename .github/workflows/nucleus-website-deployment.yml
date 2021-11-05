@@ -1,0 +1,79 @@
+name: Nucleus reusable build and deploy SAM stack
+
+on:
+  workflow_call:
+    inputs:
+      region:
+        description: 'AWS Region'
+        required: true
+        default: 'us-west-2'
+        type: string
+      environment_name:
+        description: 'Environment Name'
+        required: true
+        default: 'snd'
+        type: string
+      codebuild_name:
+        description: 'CodeBuild Name'
+        required: true
+        type: string
+    secrets:
+      JFROG_AUTH_TOKEN:
+        required: true
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      MS_TEAMS_WEBHOOK_URI:
+        required: false
+jobs:
+  deploy:
+    name: Deploy stack to AWS
+    runs-on: ubuntu-latest
+    outputs:
+      env-name: ${{ steps.env-name.outputs.environment }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      
+    - name: 'Create .npmrc'
+      shell: bash
+      run: |
+        echo "registry=https://moetech.jfrog.io/artifactory/api/npm/npm/" > .npmrc
+        echo "_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> .npmrc
+        echo "always-auth = true" >> .npmrc
+    
+    - name: Microsoft Teams Deploy Card
+      uses: patrickpaulin/ms-teams-deploy-card@master
+      if: always()
+      with:
+        github-token: ${{ github.token }}
+        webhook-uri: ${{ secrets.MS_TEAMS_WEBHOOK_URI }}
+        card-layout-exit: complete
+        show-on-start: false
+        custom-facts: |
+          - name: Environment
+            value: ${{ inputs.environment_name }}
+
+    - name: Configure AWS credentials
+      id: creds
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ inputs.region}}
+
+- name: Run CodeBuild
+  uses: aws-actions/aws-codebuild-run-build@v1
+  with:
+    project-name: ${{ inputs.codebuild_name}}
+    # buildspec-override: path/to/buildspec.yaml
+    env-vars-for-codebuild: |
+      custom,
+      requester,
+      event-name
+  env:
+    custom: my environment variable
+    requester: ${{ github.actor }}
+    event-name: ${{ github.event_name }} 
+    
