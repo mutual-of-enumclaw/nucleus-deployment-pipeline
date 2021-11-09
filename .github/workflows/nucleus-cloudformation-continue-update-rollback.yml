@@ -1,7 +1,7 @@
 name: CloudFormation Continue Update Rollback
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       region:
         description: 'AWS Region'
