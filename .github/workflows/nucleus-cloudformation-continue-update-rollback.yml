@@ -39,7 +39,7 @@ jobs:
         show-on-start: false
         custom-facts: |
           - name: Environment
-            value: ${{ inputs.environment_name }}
+            value: ${{ github.event.inputs.environment_name }}
 
     - name: Configure AWS credentials
       id: creds
@@ -47,6 +47,6 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ inputs.region}}
+        aws-region: ${{ github.event.inputs.region}}
 
-    - run: aws cloudformation continue-update-rollback --stack-name ${{ inputs.stack_name}} --resources-to-skip ${{ inputs.resources_to_skip}}
+    - run: aws cloudformation continue-update-rollback --stack-name ${{ github.event.inputs.stack_name}} --resources-to-skip ${{ github.event.inputs.resources_to_skip}}
