@@ -63,6 +63,10 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ inputs.region}}
 
+    - name: SAM Deploy
+      # for each env template we would change this from default to match the variables in the sameconfig.toml section.
+      run: npm run deploy -- --config-env ${{ inputs.environment_name }}
+
     - name: Run CodeBuild
       uses: aws-actions/aws-codebuild-run-build@v1
       with:
