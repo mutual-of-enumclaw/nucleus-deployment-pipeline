@@ -29,6 +29,9 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       env-name: ${{ steps.env-name.outputs.environment }}
+    env:
+      AWS_RETRY_MODE: adaptive
+      AWS_MAX_ATTEMPTS: 10
     steps:
     - name: Checkout
       uses: actions/checkout@v2
