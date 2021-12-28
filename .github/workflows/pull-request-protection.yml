@@ -22,7 +22,7 @@ jobs:
 
         if [[ $currentRepo == "nucleus-deployment-pipeline" ]]
         then
-          echo "Skipping PR validation on nucleus-deployment-pipeline"
+          echo "Skipping PR validation on nucleus-deployment-pipeline repository."
           exit 0
         fi
 
@@ -34,7 +34,7 @@ jobs:
 
         if [[ $sourceBranch == *"hotfix"* ]]
         then
-          echo "Bypassing PR validation for hotfix branch \"${sourceBranch}\""
+          echo "Bypassing PR validation for hotfix branch \"${sourceBranch}\"."
           exit 0
         fi
 
