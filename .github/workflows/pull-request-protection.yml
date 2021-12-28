@@ -34,8 +34,7 @@ jobs:
 
         if [[ ($targetBranch == "main" && $sourceBranch != "acc") || \
               ($targetBranch == "acc" && $sourceBranch != "test") || \
-              ($targetBranch == "tst" && $sourceBranch != "dev") || \
-        ]]
+              ($targetBranch == "tst" && $sourceBranch != "dev") ]]
         then
           echo "Blocking pull request from \"${sourceBranch}\" to \"${targetBranch}\"."
           exit 1
