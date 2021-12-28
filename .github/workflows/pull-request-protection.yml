@@ -16,11 +16,14 @@ jobs:
     - name: Compare Branches
       shell: bash
       run: |
-        sourceBranch="${{github.head_ref}}"
-        targetBranch="${{github.base_ref}}"
-        echo "Pull Request Source: ${sourceBranch}"
-        echo "Pull Request Target: ${targetBranch}"
-        echo "${github}"
+        sourceBranch="${{ github.head_ref }}"
+        targetBranch="${{ github.base_ref }}"
+        data="${{ github.event.repository.name }}"
+
+        echo "Pull Request Source: ${ sourceBranch }"
+        echo "Pull Request Target: ${ targetBranch }"
+        echo "${ data }"
+
         if [[ $sourceBranch == *"hotfix"* ]]
         then
           echo "Bypassing validation for hotfix branch \"${sourceBranch}\""
