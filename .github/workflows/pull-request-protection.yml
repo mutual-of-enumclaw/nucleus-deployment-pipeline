@@ -1,12 +1,6 @@
 name: Pull Request Protection
 
-on:
-  pull_request:
-    types: [opened, synchronize, edited, reopened]
-    branches:
-    - main
-    - acc
-    - tst
+on: [workflow_call]
 
 jobs:
   validate:
