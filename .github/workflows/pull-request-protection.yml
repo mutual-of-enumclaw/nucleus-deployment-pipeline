@@ -16,13 +16,13 @@ jobs:
     - name: Compare Branches
       shell: bash
       run: |
-        sourceBranch="${{ github.head_ref }}"
-        targetBranch="${{ github.base_ref }}"
-        data="${{ github.event.repository.name }}"
+        sourceBranch="${{github.head_ref}}"
+        targetBranch="${{github.base_ref}}"
+        data="${{github.event.repository.name}}"
 
-        echo "Pull Request Source: ${ sourceBranch }"
-        echo "Pull Request Target: ${ targetBranch }"
-        echo "${ data }"
+        echo "Pull Request Source: ${sourceBranch}"
+        echo "Pull Request Target: ${targetBranch}"
+        echo "${data}"
 
         if [[ $sourceBranch == *"hotfix"* ]]
         then
