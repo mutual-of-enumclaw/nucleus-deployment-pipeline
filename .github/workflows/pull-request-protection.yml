@@ -20,6 +20,7 @@ jobs:
         targetBranch="${{github.base_ref}}"
         echo "Pull Request Source: ${sourceBranch}"
         echo "Pull Request Target: ${targetBranch}"
+        echo "${github.event.repository.name}"
         if [[ $sourceBranch == *"hotfix"* ]]
         then
           echo "Bypassing validation for hotfix branch \"${sourceBranch}\""
@@ -34,4 +35,3 @@ jobs:
           exit 1
         fi
         exit 0
-        
