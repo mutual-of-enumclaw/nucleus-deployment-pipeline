@@ -16,19 +16,28 @@ jobs:
     - name: Compare Branches
       shell: bash
       run: |
+        currentRepo="${{github.event.repository.name}}"
+
+        echo "Current Repository: ${currentRepo}"
+
+        if [[ $currentRepo == "nucleus-deployment-pipeline" ]]
+        then
+          echo "Skipping PR validation on nucleus-deployment-pipeline"
+          exit 0
+        fi
+
         sourceBranch="${{github.head_ref}}"
         targetBranch="${{github.base_ref}}"
-        data="${{github.event.repository.name}}"
 
         echo "Pull Request Source: ${sourceBranch}"
         echo "Pull Request Target: ${targetBranch}"
-        echo "${data}"
 
         if [[ $sourceBranch == *"hotfix"* ]]
         then
-          echo "Bypassing validation for hotfix branch \"${sourceBranch}\""
+          echo "Bypassing PR validation for hotfix branch \"${sourceBranch}\""
           exit 0
         fi
+
         if [[ ($targetBranch == "main" && $sourceBranch != "acc") || \
               ($targetBranch == "acc" && $sourceBranch != "test") || \
               ($targetBranch == "tst" && $sourceBranch != "dev") || \
@@ -37,4 +46,5 @@ jobs:
           echo "Blocking pull request from \"${sourceBranch}\" to \"${targetBranch}\"."
           exit 1
         fi
+
         exit 0
