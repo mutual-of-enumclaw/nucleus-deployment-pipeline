@@ -2,7 +2,12 @@ name: Nucleus reusable build and deploy SAM stack
 
 on:
   workflow_call:
-    inputs:
+    inputs:    
+      node-build-version:
+        description: 'The version of node used in the build'
+        required: false
+        default: '14'
+        type: string
       region:
         description: 'AWS Region'
         required: true
@@ -36,7 +41,7 @@ jobs:
     - name: set node version
       uses: actions/setup-node@v2
       with:
-        node-version: '14'
+        node-version: ${{ inputs.node-build-version}}
       
     - name: 'Create .npmrc'
       shell: bash
