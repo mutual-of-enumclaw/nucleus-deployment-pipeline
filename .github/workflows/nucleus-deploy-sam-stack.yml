@@ -71,8 +71,6 @@ jobs:
         aws-region: ${{ inputs.region}} 
     
     - run: npm ci
-
-    - run: npm run activities -- --ssm-name /${{ inputs.environment_name }}/orchestrator/stacks/nucleusorchestratorcore/activities
     
     - name: SAM Deploy
       # for each env template we would change this from default to match the variables in the sameconfig.toml section.
