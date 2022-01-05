@@ -23,7 +23,8 @@ jobs:
       matrix:
         os: 
           - ubuntu-latest
-        node-version: [${{ inputs.NODE_VERSIONS }}]
+        node-version: 
+          - ${{ inputs.NODE_VERSIONS }}
 
     steps:
       - name: Checkout
