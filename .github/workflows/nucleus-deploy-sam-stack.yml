@@ -43,12 +43,12 @@ jobs:
       with:
         node-version: ${{ inputs.node-build-version}}
       
-    # - name: 'Create .npmrc'
-    #   shell: bash
-    #   run: |
-    #     echo "registry=https://moetech.jfrog.io/artifactory/api/npm/npm/" > .npmrc
-    #     echo "_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> .npmrc
-    #     echo "always-auth = true" >> .npmrc
+    - name: 'Create .npmrc'
+      shell: bash
+      run: |
+        echo "registry=https://moetech.jfrog.io/artifactory/api/npm/npm/" > .npmrc
+        echo "_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> .npmrc
+        echo "always-auth = true" >> .npmrc
     
     - name: Microsoft Teams Deploy Card
       uses: patrickpaulin/ms-teams-deploy-card@master
