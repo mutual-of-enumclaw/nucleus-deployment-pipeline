@@ -2,12 +2,6 @@ name: Node.js CI
 
 on:
  workflow_call:
-    inputs: 
-      NODE_VERSIONS:
-        description: 'The version of node to run unit tests with'
-        required: false
-        type: string
-        default: [12.x, 14.x]
     secrets:
       JFROG_AUTH_TOKEN:
         required: true
@@ -22,7 +16,7 @@ jobs:
     strategy:
       matrix:      
         os: [ubuntu-latest]
-        node-version: ${{ inputs.NODE_VERSIONS }}
+        node-version: [16.x]
 
     steps:
       - name: Checkout
