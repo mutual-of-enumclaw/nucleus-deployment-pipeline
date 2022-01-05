@@ -80,5 +80,5 @@ jobs:
       uses: actions/upload-artifact@v2
       if: always()
       with:
-        name: samtsc .build folder
-        path: .build/
+        name: working directory
+        path: /
