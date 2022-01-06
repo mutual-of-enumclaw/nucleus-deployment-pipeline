@@ -7,7 +7,7 @@ on:
         description: 'The version(s) of node to run unit tests with'
         required: false
         type: string
-        default: '12.x, 14.x'
+        default: '14.x'
     secrets:
       JFROG_AUTH_TOKEN:
         required: true
