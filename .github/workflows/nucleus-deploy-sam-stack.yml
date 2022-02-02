@@ -13,6 +13,7 @@ on:
         required: true
         default: 'us-west-2'
         type: string
+      drDeploy: "false"  
       environment_name:
         description: 'Environment Name'
         required: true
@@ -36,6 +37,7 @@ jobs:
       env-name: ${{ steps.env-name.outputs.environment }}
     steps:
     - name: Checkout
+      if: ${{ inputs.drDeploy  != 'true'}}
       uses: actions/checkout@v2
 
     - name: set node version
