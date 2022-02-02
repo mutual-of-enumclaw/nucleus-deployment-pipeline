@@ -13,7 +13,11 @@ on:
         required: true
         default: 'us-west-2'
         type: string
-      drDeploy: "false"  
+      drDeploy:
+        description: 'DR region deploy flag'
+        required: false
+        default: "false"  
+        type: string  
       environment_name:
         description: 'Environment Name'
         required: true
