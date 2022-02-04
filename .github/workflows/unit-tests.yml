@@ -17,10 +17,10 @@ jobs:
   build:
 
     runs-on: ${{ matrix.os }}
-    
+
     defaults:
       run:
-        working-directory: ${{ inputs.workingPath }}
+        working-directory: ${{ inputs.workingDirectory }}
 
     strategy:
       matrix:      
