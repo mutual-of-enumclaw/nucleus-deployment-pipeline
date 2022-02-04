@@ -7,6 +7,11 @@ on:
         description: 'Working Directory'
         default: '.'
         type: string
+      NODE_VERSIONS:
+        description: 'The version(s) of node to run unit tests with'
+        required: false
+        type: string
+        default: '14.x'
     secrets:
       JFROG_AUTH_TOKEN:
         required: true
@@ -23,9 +28,11 @@ jobs:
         working-directory: ${{ inputs.workingDirectory }}
 
     strategy:
-      matrix:      
-        os: [ubuntu-latest]
-        node-version: [12.x, 14.x]
+      matrix:
+        os: 
+          - ubuntu-latest
+        node-version: 
+          - ${{ inputs.NODE_VERSIONS }}
 
     steps:
       - name: Checkout

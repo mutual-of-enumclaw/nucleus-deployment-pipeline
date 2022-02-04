@@ -1,0 +1,70 @@
+name: Build and deploy nucleus orchestrator
+
+on:
+  workflow_call:
+    inputs:    
+      node-build-version:
+        description: 'The version of node used in the build'
+        required: false
+        default: '14'
+        type: string
+      region:
+        description: 'AWS Region'
+        required: true
+        default: 'us-west-2'
+        type: string
+      environment_name:
+        description: 'Environment Name'
+        required: true
+        default: 'snd'
+        type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      MS_TEAMS_WEBHOOK_URI:
+        required: false
+
+jobs:
+  deploy:
+    name: Deploy stack to AWS
+    runs-on: ubuntu-latest
+    outputs:
+      env-name: ${{ steps.env-name.outputs.environment }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: set node version
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ inputs.node-build-version}}
+    
+    - name: Microsoft Teams Deploy Card
+      uses: patrickpaulin/ms-teams-deploy-card@master
+      if: always()
+      with:
+        github-token: ${{ github.token }}
+        webhook-uri: ${{ secrets.MS_TEAMS_WEBHOOK_URI }}
+        card-layout-exit: complete
+        show-on-start: false
+        custom-facts: |
+          - name: Environment
+            value: ${{ inputs.environment_name }}
+
+    - name: Configure AWS credentials
+      id: creds
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ inputs.region}} 
+    
+    - run: npm ci
+
+    - run: npm run activities -- --ssm-name /${{ inputs.environment_name }}/orchestrator/stacks/nucleusorchestratorcore/activities
+    
+    - name: SAM Deploy
+      # for each env template we would change this from default to match the variables in the sameconfig.toml section.
+      run: npm run deploy -- --config-env ${{ inputs.environment_name }}
