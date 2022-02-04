@@ -3,8 +3,8 @@ name: Node.js CI
 on:
  workflow_call:
     inputs:
-      workingPath:
-        description: 'Working Path'
+      workingDirectory:
+        description: 'Working Directory'
         default: '.'
         type: string
     secrets:
@@ -17,6 +17,10 @@ jobs:
   build:
 
     runs-on: ${{ matrix.os }}
+    
+    defaults:
+      run:
+        working-directory: ${{ inputs.workingPath }}
 
     strategy:
       matrix:      
@@ -40,8 +44,6 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-
-      - run: cd ${{ inputs.workingPath }}
 
       - run: npm ci
 
