@@ -75,3 +75,10 @@ jobs:
     - name: SAM Deploy
       # for each env template we would change this from default to match the variables in the sameconfig.toml section.
       run: npm run deploy -- --config-env ${{ inputs.environment_name }}
+
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: samtsc .build folder
+        path: .build/
