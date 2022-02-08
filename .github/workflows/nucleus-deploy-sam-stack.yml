@@ -3,6 +3,11 @@ name: Nucleus reusable build and deploy SAM stack
 on:
   workflow_call:
     inputs:    
+      sam-cli-version:
+        description: 'The version of sam-cli used in the build'
+        required: false
+        default: '1.36.0'
+        type: string
       node-build-version:
         description: 'The version of node used in the build'
         required: false
@@ -49,7 +54,12 @@ jobs:
         echo "registry=https://moetech.jfrog.io/artifactory/api/npm/npm/" > .npmrc
         echo "_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> .npmrc
         echo "always-auth = true" >> .npmrc
-    
+   
+    - name: 'Setup SAM'
+      uses: aws-actions/setup-sam@v1 
+      with: 
+        version: ${{ inputs.sam-cli-version}}
+
     - name: Microsoft Teams Deploy Card
       uses: patrickpaulin/ms-teams-deploy-card@master
       if: always()
