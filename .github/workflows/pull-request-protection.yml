@@ -33,7 +33,7 @@ jobs:
         fi
 
         if [[ ($targetBranch == "main" && $sourceBranch != "acc") || \
-              ($targetBranch == "acc" && $sourceBranch != "test") || \
+              ($targetBranch == "acc" && $sourceBranch != "tst") || \
               ($targetBranch == "tst" && $sourceBranch != "dev") ]]
         then
           echo "Blocking pull request from \"${sourceBranch}\" to \"${targetBranch}\"."
