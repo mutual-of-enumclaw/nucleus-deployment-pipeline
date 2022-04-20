@@ -18,6 +18,11 @@ on:
         required: true
         default: 'snd'
         type: string
+      archive_logs:
+        description: 'Upload logs to artifacts'
+        required: false
+        default: 'false'
+        type: string
     secrets:
       JFROG_AUTH_TOKEN:
         required: true
@@ -76,3 +81,9 @@ jobs:
       # for each env template we would change this from default to match the variables in the sameconfig.toml section.
       run: npm run deploy -- --config-env ${{ inputs.environment_name }}
 
+    - name: Archive npm logs
+        uses: actions/upload-artifact@v3
+        if:  ${{ always() && github.event.inputs.archive_logs == 'true' }}
+        with:
+          name: npm-logs
+          path: /home/runner/.npm/_logs
