@@ -21,7 +21,12 @@ on:
       archive_logs:
         description: 'Upload logs to artifacts'
         required: false
-        default: ''
+        default: 'false'
+        type: string
+      archive_build:
+        description: 'Upload build to artifacts'
+        required: false
+        default: 'false'
         type: string
     secrets:
       JFROG_AUTH_TOKEN:
@@ -73,7 +78,7 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ inputs.region}} 
+        aws-region: ${{ inputs.region}}
 
     - run: npm ci
 
@@ -87,3 +92,10 @@ jobs:
       with:
         name: npm-logs
         path: /home/runner/.npm/_logs
+
+    - name: Archive build directory
+      uses: actions/upload-artifact@v3
+      if:  ${{ always() && inputs.archive_build == 'true' }}
+      with:
+        name: build-artifacts
+        path: .build/
