@@ -39,9 +39,13 @@ jobs:
     - name: 'Create .npmrc'
       shell: bash
       run: |
-        echo "registry=https://moetech.jfrog.io/artifactory/api/npm/npm/" > .npmrc
-        echo "_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> .npmrc
-        echo "always-auth = true" >> .npmrc
+          echo "Creating/Updating .npmrc in $PWD"
+          # Create a new .npmrc if there isn't one there already
+          [ ! -e .npmrc ] && "Creating new .npmrc" && echo "registry=https://moetech.jfrog.io/artifactory/api/npm/npm/" > .npmrc
+          # Add a newline to the .npmrc just in case the checked in version doesn't have one already.
+          echo "" >> .npmrc
+          echo "_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> .npmrc
+          echo "always-auth = true" >> .npmrc
     
     - name: Microsoft Teams Deploy Card
       uses: patrickpaulin/ms-teams-deploy-card@master
