@@ -50,7 +50,7 @@ jobs:
           echo "Creating/Updating .npmrc in $PWD"
           echo "Using registry: ${{ inputs.jfrog_npm_registry }}"
           [ -e .npmrc ] && cat .npmrc
-          [ ! -e .npmrc ] && && "Creating new .npmrc" && echo "registry=https://moetech.jfrog.io/artifactory/api/npm/${{ inputs.jfrog_npm_registry }}/" > .npmrc
+          [ ! -e .npmrc ] && "Creating new .npmrc" && echo "registry=https://moetech.jfrog.io/artifactory/api/npm/${{ inputs.jfrog_npm_registry }}/" > .npmrc
           echo "_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> .npmrc
           echo "always-auth = true" >> .npmrc
           echo "------"
