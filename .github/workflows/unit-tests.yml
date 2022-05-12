@@ -12,15 +12,15 @@ on:
         required: false
         type: string
         default: '14.x'
+      jfrog_npm_registry:
+        description: 'JFrog NPM registry name'
+        default: 'npm'
+        type: string
     secrets:
       JFROG_AUTH_TOKEN:
         required: true
       COVERAGE_REPORT_GIST_TOKEN:
         required: true
-    jfrog_npm_registry:
-      description: 'JFrog NPM registry name'
-      default: 'npm'
-      type: string
 
 jobs:
   build:
