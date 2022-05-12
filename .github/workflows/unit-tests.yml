@@ -47,8 +47,9 @@ jobs:
       - name: 'Create .npmrc'
         shell: bash
         run: |
+          echo "Creating/Updating .npmrc in $PWD"
           echo "Using registry: ${{ inputs.jfrog_npm_registry }}"
-        [ ! -e .npmrc ] && echo "registry=https://moetech.jfrog.io/artifactory/api/npm/${{ inputs.jfrog_npm_registry }}/" > .npmrc
+          [ ! -e .npmrc ] && echo "registry=https://moetech.jfrog.io/artifactory/api/npm/${{ inputs.jfrog_npm_registry }}/" > .npmrc
           echo "_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> .npmrc
           echo "always-auth = true" >> .npmrc
 
