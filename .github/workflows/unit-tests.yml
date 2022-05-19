@@ -45,11 +45,10 @@ jobs:
         run: |
           echo "Creating/Updating .npmrc in $PWD"
           # Create a new .npmrc if there isn't one there already
-          [ ! -e .npmrc ] && echo "Creating new .npmrc" && echo "registry=https://moetech.jfrog.io/artifactory/api/npm/npm/" > .npmrc
-          # Add a newline to the .npmrc just in case the checked in version doesn't have one already.
-          echo "" >> .npmrc
-          echo "_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> .npmrc
-          echo "always-auth = true" >> .npmrc
+          [ ! -e .npmrc ] && echo "registry=https://moetech.jfrog.io/artifactory/api/npm/npm/" > ~/.npmrc
+          [ -e .npmrc ] && cp .npmrc ~/.npmrc && echo "" >> ~/.npmrc
+          echo "_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> ~/.npmrc
+          echo "always-auth = true" >> ~/.npmrc
 
       - name: Use Node.js ${{ matrix.node-version }} on ${{ matrix.os }}
         uses: actions/setup-node@v1
