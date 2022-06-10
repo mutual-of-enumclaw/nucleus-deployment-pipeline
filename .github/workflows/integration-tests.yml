@@ -35,11 +35,11 @@ jobs:
         run: |
           FUNCTION_NAME="$(aws lambda list-functions --region ${{ inputs.region }} | jq -r '.Functions[] | .FunctionName | select(startswith("${{ inputs.stackName }}") and contains("integrationTests"))')"
           echo "Integration Tests Function Found: $FUNCTION_NAME"
-          echo "::set-output name=function_name::$FUNCTION_NAME"
+          echo "::set-env name=FUNCTION_NAME::$FUNCTION_NAME"
 
       - name: Run Integration Tests Lambda
         run: |
-          echo "Running Integration Tests Function: ${{ steps.vars.outputs.function_name }}"
-          aws lambda invoke --region ${{ inputs.region }} --invocation-type "RequestResponse" --function-name ${{ steps.vars.outputs.function_name }} lambda_response
+          echo "Running Integration Tests Function: $FUNCTION_NAME"
+          aws lambda invoke --region ${{ inputs.region }} --invocation-type "RequestResponse" --function-name $FUNCTION_NAME lambda_response
           echo "Test Run Response"
           cat ./lambda_response
