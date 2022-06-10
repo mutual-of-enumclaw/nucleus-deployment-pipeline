@@ -38,6 +38,7 @@ jobs:
       
       - name: Run Integration Tests Lambda
         run: |
-          FUNCTION_NAME="$(aws lambda list-functions --region ${{ inputs.region }} | jq '.Functions[] | .FunctionName | select(startswith("${{ inputs.stackName }}") and contains("integrationTests"))')"
+          FUNCTION_NAME="$(aws lambda list-functions --region ${{ inputs.region }} | jq -r '.Functions[] | .FunctionName | select(startswith("${{ inputs.stackName }}") and contains("integrationTests"))')"
+          echo "Calling function $FUNCTION_NAME"
           aws lambda invoke --region ${{ inputs.region }} --invocation-type "RequestResponse" --function-name $FUNCTION_NAME lambda_response
           cat ./lambda_response
