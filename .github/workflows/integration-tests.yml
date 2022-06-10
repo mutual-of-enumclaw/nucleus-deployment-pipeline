@@ -23,11 +23,6 @@ jobs:
     name: Run Integration Tests Lambda
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
-      
       - name: Configure AWS credentials
         id: creds
         uses: aws-actions/configure-aws-credentials@v1
@@ -41,4 +36,5 @@ jobs:
           FUNCTION_NAME="$(aws lambda list-functions --region ${{ inputs.region }} | jq -r '.Functions[] | .FunctionName | select(startswith("${{ inputs.stackName }}") and contains("integrationTests"))')"
           echo "Calling function $FUNCTION_NAME"
           aws lambda invoke --region ${{ inputs.region }} --invocation-type "RequestResponse" --function-name $FUNCTION_NAME lambda_response
+          echo "Test Response"
           cat ./lambda_response
