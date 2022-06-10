@@ -31,10 +31,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ inputs.region }}
       
-      - name: Run Integration Tests Lambda
+      - name: Find Integration Tests Lambda
         run: |
           FUNCTION_NAME="$(aws lambda list-functions --region ${{ inputs.region }} | jq -r '.Functions[] | .FunctionName | select(startswith("${{ inputs.stackName }}") and contains("integrationTests"))')"
-          echo "Calling function $FUNCTION_NAME"
-          aws lambda invoke --region ${{ inputs.region }} --invocation-type "RequestResponse" --function-name $FUNCTION_NAME lambda_response
-          echo "Test Response"
+          echo "Integration Tests Function Found: $FUNCTION_NAME"
+          echo ::set-output name=function_name::$FUNCTION_NAME
+
+      - name: Run Integration Tests Lambda
+          aws lambda invoke --region ${{ inputs.region }} --invocation-type "RequestResponse" --function-name ${{ steps.vars.outputs.function_name }} lambda_response
+          echo "Test Run Response"
           cat ./lambda_response
