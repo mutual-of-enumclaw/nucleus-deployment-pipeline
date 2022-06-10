@@ -36,6 +36,8 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ inputs.region }}
       
-      - name: Find Integration Tests Lambda
+      - name: Run Integration Tests Lambda
         run: |
-          aws lambda list-functions --region ${{ inputs.region }} | jq '.Functions[] | .FunctionName | select(startswith("${{ inputs.stackName }}") and contains("integrationTests"))'
+          FUNCTION_NAME="$(aws lambda list-functions --region ${{ inputs.region }} | jq '.Functions[] | .FunctionName | select(startswith("${{ inputs.stackName }}") and contains("integrationTests"))')"
+          aws lambda invoke --region ${{ inputs.region }} --invocation-type "RequestResponse" --function-name $FUNCTION_NAME lambda_response
+          cat ./lambda_response
