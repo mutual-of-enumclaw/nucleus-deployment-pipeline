@@ -37,5 +37,5 @@ jobs:
           aws-region: ${{ inputs.region }}
       
       - name: Find Integration Tests Lambda
-        run:
+        run: |
           - aws lambda list-functions --region ${{ inputs.region }} | jq '.Functions[] | .FunctionName | select(startswith("${{ inputs.stackName }}") and contains("integrationTests"))'
