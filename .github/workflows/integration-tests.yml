@@ -1,4 +1,4 @@
-name: Node.js CI
+name: Integration Tests
 
 on:
  workflow_call:
@@ -40,6 +40,6 @@ jobs:
       - name: Run Integration Tests Lambda
         run: |
           echo "Running Integration Tests Function: ${{ env.FUNCTION_NAME }}"
-          aws lambda invoke --region ${{ inputs.region }} --invocation-type "RequestResponse" --function-name ${{ env.FUNCTION_NAME }} lambda_response
-          echo "Test Run Response"
-          cat ./lambda_response
+          aws lambda invoke --region ${{ inputs.region }} --invocation-type "RequestResponse" --function-name ${{ env.FUNCTION_NAME }} lambda_response.json
+          echo "Test Run Results"
+          cat ./lambda_response.json
