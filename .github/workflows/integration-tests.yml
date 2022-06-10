@@ -35,7 +35,7 @@ jobs:
         run: |
           FUNCTION_NAME="$(aws lambda list-functions --region ${{ inputs.region }} | jq -r '.Functions[] | .FunctionName | select(startswith("${{ inputs.stackName }}") and contains("integrationTests"))')"
           echo "Integration Tests Function Found: $FUNCTION_NAME"
-          echo ::set-output name=function_name::$FUNCTION_NAME
+          echo ""::set-output name=function_name::$FUNCTION_NAME"
 
       - name: Run Integration Tests Lambda
         run: |
