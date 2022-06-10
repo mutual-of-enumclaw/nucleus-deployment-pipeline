@@ -38,6 +38,8 @@ jobs:
           echo ::set-output name=function_name::$FUNCTION_NAME
 
       - name: Run Integration Tests Lambda
+          run: |
+          echo "Running Integration Tests Function: ${{ steps.vars.outputs.function_name }}"
           aws lambda invoke --region ${{ inputs.region }} --invocation-type "RequestResponse" --function-name ${{ steps.vars.outputs.function_name }} lambda_response
           echo "Test Run Response"
           cat ./lambda_response
