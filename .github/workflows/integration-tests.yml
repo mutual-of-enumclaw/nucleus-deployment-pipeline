@@ -1,0 +1,41 @@
+name: Node.js CI
+
+on:
+ workflow_call:
+    inputs:
+      stackName:
+        description: 'Stack Name'
+        default: ''
+        type: string
+      region:
+        description: 'AWS Region'
+        required: true
+        default: 'us-west-2'
+        type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+
+jobs:
+  runTests:
+    name: Run Integration Tests Lambda
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      
+      - name: Configure AWS credentials
+        id: creds
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ inputs.region }}
+      
+      - name: Find Integration Tests Lambda
+        run:
+          - aws lambda list-functions --region ${{ inputs.region }} | jq '.Functions[] | .FunctionName | select(startswith("${{ inputs.stackName }}") and contains("integrationTests"))'
