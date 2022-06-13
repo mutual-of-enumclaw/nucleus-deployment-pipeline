@@ -43,5 +43,5 @@ jobs:
           aws lambda invoke --region ${{ inputs.region }} --invocation-type "RequestResponse" --function-name ${{ env.FUNCTION_NAME }} lambda_response.json
           echo "Test Run Results"
           cat ./lambda_response.json | jq .
-          TEST_RESULT="$(cat lambda_response.json | jq 'select(.success == true) | .success')"
+          TEST_RESULT="$(cat lambda_response.json | jq '.success')"
           [[ "$TEST_RESULT" == "true" ]] && echo "Tests Passed" || { echo "Test Run Failed"; exit $ERRCODE; }
