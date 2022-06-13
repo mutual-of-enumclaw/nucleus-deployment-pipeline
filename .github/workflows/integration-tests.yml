@@ -17,6 +17,8 @@ on:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
+      MS_TEAMS_WEBHOOK_URI:
+        required: false
 
 jobs:
   runTests:
@@ -30,6 +32,17 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ inputs.region }}
+
+      - name: Microsoft Teams Deploy Card
+        uses: patrickpaulin/ms-teams-deploy-card@master
+        if: always()
+        with:
+          github-token: ${{ github.token }}
+          webhook-uri: ${{ secrets.MS_TEAMS_WEBHOOK_URI }}
+          card-layout-exit: complete
+          show-on-start: false
+          show-on-exit: false
+          show-on-failure: true
       
       - name: Find Integration Tests Lambda
         run: |
@@ -44,4 +57,4 @@ jobs:
           echo "Test Run Results"
           cat ./lambda_response.json | jq .
           TEST_RESULT="$(cat lambda_response.json | jq '.success')"
-          [[ "$TEST_RESULT" == "true" ]] && echo "Tests Passed" || { echo "Test Run Failed"; exit 1; }
+          [[ "$TEST_RESULT" == "true" ]] && echo "Tests Passed" || { echo "Integration Tests Lambda Failed: ${{ env.FUNCTION_NAME }}"; exit 1; }
