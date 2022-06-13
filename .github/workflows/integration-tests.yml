@@ -12,6 +12,11 @@ on:
         required: true
         default: 'us-west-2'
         type: string
+      environment_name:
+        description: 'Environment Name'
+        required: true
+        default: 'snd'
+        type: string
     secrets:
       AWS_ACCESS_KEY_ID:
         required: true
@@ -43,6 +48,9 @@ jobs:
           show-on-start: false
           show-on-exit: false
           show-on-failure: true
+          custom-facts: |
+            - name: Environment
+              value: ${{ inputs.environment_name }}
       
       - name: Find Integration Tests Lambda
         run: |
