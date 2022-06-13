@@ -44,4 +44,4 @@ jobs:
           echo "Test Run Results"
           cat ./lambda_response.json | jq .
           TEST_RESULT="$(cat lambda_response.json | jq '.success')"
-          [[ "$TEST_RESULT" == "true" ]] && echo "Tests Passed" || { echo "Test Run Failed"; exit $ERRCODE; }
+          [[ "$TEST_RESULT" == "true" ]] && echo "Tests Passed" || { echo "Test Run Failed"; exit 1; }
