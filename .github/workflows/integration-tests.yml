@@ -37,6 +37,20 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ inputs.region }}
+
+      - name: Microsoft Teams Deploy Card
+        uses: patrickpaulin/ms-teams-deploy-card@master
+        if: always()
+        with:
+          github-token: ${{ github.token }}
+          webhook-uri: ${{ secrets.MS_TEAMS_WEBHOOK_URI }}
+          card-layout-exit: complete
+          show-on-start: false
+          show-on-exit: false
+          show-on-failure: true
+          custom-facts: |
+            - name: Environment
+              value: ${{ inputs.environment_name }}
       
       - name: Find Integration Tests Lambda
         run: |
