@@ -1,0 +1,68 @@
+name: Integration Tests
+
+on:
+ workflow_call:
+    inputs:
+      stackName:
+        description: 'Stack Name'
+        default: ''
+        type: string
+      region:
+        description: 'AWS Region'
+        required: true
+        default: 'us-west-2'
+        type: string
+      environment_name:
+        description: 'Environment Name'
+        required: true
+        default: 'snd'
+        type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      MS_TEAMS_WEBHOOK_URI:
+        required: false
+
+jobs:
+  runTests:
+    name: Run Integration Tests Lambda
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        id: creds
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ inputs.region }}
+
+      - name: Microsoft Teams Deploy Card
+        uses: patrickpaulin/ms-teams-deploy-card@master
+        if: always()
+        with:
+          github-token: ${{ github.token }}
+          webhook-uri: ${{ secrets.MS_TEAMS_WEBHOOK_URI }}
+          card-layout-exit: complete
+          show-on-start: false
+          show-on-exit: false
+          show-on-failure: true
+          custom-facts: |
+            - name: Environment
+              value: ${{ inputs.environment_name }}
+      
+      - name: Find Integration Tests Lambda
+        run: |
+          FUNCTION_NAME="$(aws lambda list-functions --region ${{ inputs.region }} | jq -r '.Functions[] | .FunctionName | select(startswith("${{ inputs.stackName }}") and contains("integrationTests"))')"
+          echo "Integration Tests Function Found: $FUNCTION_NAME"
+          echo "FUNCTION_NAME=$FUNCTION_NAME" >> $GITHUB_ENV
+
+      - name: Run Integration Tests Lambda
+        run: |
+          echo "Running Integration Tests Function: ${{ env.FUNCTION_NAME }}"
+          aws lambda invoke --region ${{ inputs.region }} --invocation-type "RequestResponse" --function-name ${{ env.FUNCTION_NAME }} lambda_response.json
+          echo "Test Run Results"
+          cat ./lambda_response.json | jq .
+          TEST_RESULT="$(cat lambda_response.json | jq '.success')"
+          [[ "$TEST_RESULT" == "true" ]] && echo "Tests Passed" || { echo "Integration Tests Lambda Failed: ${{ env.FUNCTION_NAME }}"; exit 1; }
