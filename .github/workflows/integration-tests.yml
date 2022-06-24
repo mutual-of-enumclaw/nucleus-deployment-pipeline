@@ -61,7 +61,7 @@ jobs:
       - name: Run Integration Tests Lambda
         run: |
           echo "Running Integration Tests Function: ${{ env.FUNCTION_NAME }}"
-          aws lambda invoke --region ${{ inputs.region }} --invocation-type "RequestResponse" --function-name ${{ env.FUNCTION_NAME }} lambda_response.json
+          aws lambda invoke --region ${{ inputs.region }} --invocation-type "RequestResponse" --function-name ${{ env.FUNCTION_NAME }} --cli-read-timeout 0 --cli-connect-timeout 0 lambda_response.json
           echo "Test Run Results"
           cat ./lambda_response.json | jq .
           TEST_RESULT="$(cat lambda_response.json | jq '.success')"
