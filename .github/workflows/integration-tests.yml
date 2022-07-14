@@ -67,6 +67,7 @@ jobs:
         run: |
           echo "Running Integration Tests Function: ${{ env.FUNCTION_NAME }}"
           TAGS=${{ inputs.tags }}
+          # Convert comma-separated string into comma-separated quoted strings (ex: 'one,two,three' to '"one","two","three"')
           [[ ! -z $TAGS ]] && TAGS=$(echo "\"${TAGS//,/\",\"}\"")
           echo "{\"tags\": [$TAGS]}" > payload.json
           aws lambda invoke --region ${{ inputs.region }} --invocation-type "RequestResponse" --function-name ${{ env.FUNCTION_NAME }} --cli-read-timeout 0 --cli-connect-timeout 0 --cli-binary-format raw-in-base64-out --payload file://payload.json lambda_response.json
