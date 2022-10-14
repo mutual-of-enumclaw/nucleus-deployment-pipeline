@@ -77,7 +77,7 @@ jobs:
           echo "BRANCH=$(echo ${BRANCH_NAME})" >> $GITHUB_ENV
       - if: ${{ matrix.node-version == '14.x' }}
         name: Create the Badge
-        uses: schneegans/dynamic-badges-action@v1.0.0
+        uses: schneegans/dynamic-badges-action@v1.6.0
         with:
           auth: ${{ secrets.COVERAGE_REPORT_GIST_TOKEN }}
           gistID: fe0dd2d20f191c9b64cbe698d93449d5
