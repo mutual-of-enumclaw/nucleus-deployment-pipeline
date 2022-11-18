@@ -15,7 +15,7 @@ on:
     secrets:
       JFROG_AUTH_TOKEN:
         required: true
-      COVERAGE_REPORT_GIST_TOKEN:
+      DEPLOY_USER_GITHUB_TOKEN:
         required: true
       SONAR_TOKEN:
         required: true
@@ -59,10 +59,10 @@ jobs:
 
       - run: npm ci
 
-      - run: npm run lt
+      - run: npm run test:coverage
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          GITHUB_TOKEN: ${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
