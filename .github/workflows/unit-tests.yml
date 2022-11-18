@@ -17,6 +17,8 @@ on:
         required: true
       COVERAGE_REPORT_GIST_TOKEN:
         required: true
+      SONAR_TOKEN:
+        required: true
 
 jobs:
   build:
