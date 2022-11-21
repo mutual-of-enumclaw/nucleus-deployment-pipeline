@@ -61,6 +61,12 @@ jobs:
 
       - run: npm run test:coverage
 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Archive code coverage results
+          path: coverage/
+          retention-days: 5
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
