@@ -31,6 +31,10 @@ on:
         required: true
       MS_TEAMS_WEBHOOK_URI:
         required: false
+      DEPLOY_USER_GITHUB_TOKEN:
+        required: true
+      SONAR_TOKEN:
+        required: true
 jobs:
   deploy:
     name: Deploy stack to AWS
