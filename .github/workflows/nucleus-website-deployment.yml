@@ -17,6 +17,11 @@ on:
         description: 'CodeBuild Name'
         required: true
         type: string
+      archive_coverage:
+        description: 'Upload code coverage to artifacts'
+        required: false
+        default: 'false'
+        type: string
     secrets:
       JFROG_AUTH_TOKEN:
         required: true
@@ -35,7 +40,7 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-      
+
     - name: 'Create .npmrc'
       shell: bash
       run: |
@@ -45,7 +50,7 @@ jobs:
           [ -e .npmrc ] && cp .npmrc ~/.npmrc && echo "" >> ~/.npmrc
           echo "_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> ~/.npmrc
           echo "always-auth = true" >> ~/.npmrc
-    
+
     - name: Microsoft Teams Deploy Card
       uses: patrickpaulin/ms-teams-deploy-card@master
       if: always()
@@ -65,9 +70,25 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ inputs.region}}
-    
+
     - run: npm ci
-    
+
+    - run: npm run test:coverage
+
+    - name: Archive code coverage results
+      uses: actions/upload-artifact@v3
+      if:  ${{ always() && inputs.archive_coverage == 'true' }}
+      with:
+        name: code-coverage-report
+        path: coverage/
+        retention-days: 5
+
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
     - name: SAM Deploy
       # for each env template we would change this from default to match the variables in the sameconfig.toml section.
       run: npm run deploy -- --config-env ${{ inputs.environment_name }}
@@ -84,4 +105,4 @@ jobs:
       env:
         custom: my environment variable
         requester: ${{ github.actor }}
-        event-name: ${{ github.event_name }} 
+        event-name: ${{ github.event_name }}
