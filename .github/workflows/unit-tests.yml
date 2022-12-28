@@ -48,7 +48,8 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Configure AWS credentials
+      - if: ${{ secrets.AWS_ACCESS_KEY_ID != '' }}
+        name: Configure AWS credentials
         id: creds
         uses: aws-actions/configure-aws-credentials@v1
         with:
