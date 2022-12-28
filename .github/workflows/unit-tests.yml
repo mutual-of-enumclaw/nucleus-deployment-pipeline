@@ -16,6 +16,10 @@ on:
         description: 'AWS Region'
         type: string
         default: 'us-west-2'
+      configureAwsCredentials:
+        description: 'Configure AWS Credentials'
+        type: boolean
+        default: false
     secrets:
       JFROG_AUTH_TOKEN:
         required: true
@@ -48,7 +52,7 @@ jobs:
         with:
           submodules: recursive
 
-      - if: ${{ secrets.AWS_ACCESS_KEY_ID != '' }}
+      - if: ${{ inputs.configureAwsCredentials == true }}
         name: Configure AWS credentials
         id: creds
         uses: aws-actions/configure-aws-credentials@v1
