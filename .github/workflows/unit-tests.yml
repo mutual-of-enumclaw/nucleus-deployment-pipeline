@@ -21,9 +21,9 @@ on:
       COVERAGE_REPORT_GIST_TOKEN:
         required: true
       AWS_ACCESS_KEY_ID:
-        required: true
+        required: false
       AWS_SECRET_ACCESS_KEY:
-        required: true
+        required: false
 
 jobs:
   build:
