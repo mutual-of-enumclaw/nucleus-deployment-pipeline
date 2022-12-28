@@ -14,6 +14,7 @@ on:
         default: '14.x'
       region:
         description: 'AWS Region'
+        type: string
         default: 'us-west-2'
     secrets:
       JFROG_AUTH_TOKEN:
