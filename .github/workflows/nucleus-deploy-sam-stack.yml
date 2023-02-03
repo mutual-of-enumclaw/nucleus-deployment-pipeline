@@ -64,7 +64,7 @@ jobs:
           echo "always-auth = true" >> ~/.npmrc
 
     - name: Microsoft Teams Deploy Card
-      uses: patrickpaulin/ms-teams-deploy-card@master
+      uses: mutual-of-enumclaw/ms-teams-deploy-card@main
       if: always()
       with:
         github-token: ${{ github.token }}
