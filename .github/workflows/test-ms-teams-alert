@@ -1,4 +1,4 @@
-name: Integration Tests
+name: Test MS Teams Alert
 
 on:
  workflow_call:
