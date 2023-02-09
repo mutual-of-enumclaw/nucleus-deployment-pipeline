@@ -1,7 +1,7 @@
 name: Test MS Teams Alert
 
 on:
- workflow_call:
+  workflow_dispatch:
     inputs:
       webhook_uri:
         description: 'webhook_uri'
