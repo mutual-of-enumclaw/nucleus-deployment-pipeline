@@ -78,7 +78,7 @@ jobs:
       run: npm run deploy -- --config-env ${{ inputs.environment_name }}
       
     - name: Microsoft Teams Deploy Card
-      uses: jdcargile/ms-teams-notification@v1.3
+      uses: jdcargile/ms-teams-notification@master
       continue-on-error: true
       if: always()
       with:
