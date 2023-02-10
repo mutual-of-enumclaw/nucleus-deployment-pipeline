@@ -78,7 +78,8 @@ jobs:
       run: npm run deploy -- --config-env ${{ inputs.environment_name }}
       
     - name: Microsoft Teams Deploy Card
-      uses: dragos-cojocari/ms-teams-notification@v1.0.2
+      uses: jdcargile/ms-teams-notification@v1.3
+      continue-on-error: true
       if: always()
       with:
         github-token: ${{ github.token }} # this will use the runner's token.
