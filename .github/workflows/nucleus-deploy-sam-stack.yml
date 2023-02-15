@@ -39,6 +39,8 @@ on:
         required: false
 
 jobs:
+  permissions:
+    actions: read
   deploy:
     name: Deploy stack to AWS
     runs-on: ubuntu-latest
