@@ -63,18 +63,6 @@ jobs:
           echo "_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> ~/.npmrc
           echo "always-auth = true" >> ~/.npmrc
 
-    - name: Microsoft Teams Deploy Card
-      uses: mutual-of-enumclaw/ms-teams-deploy-card@main
-      if: always()
-      with:
-        github-token: ${{ github.token }}
-        webhook-uri: ${{ secrets.MS_TEAMS_WEBHOOK_URI }}
-        card-layout-exit: complete
-        show-on-start: false
-        custom-facts: |
-          - name: Environment
-            value: ${{ inputs.environment_name }}
-
     - name: Configure AWS credentials
       id: creds
       uses: aws-actions/configure-aws-credentials@v1
