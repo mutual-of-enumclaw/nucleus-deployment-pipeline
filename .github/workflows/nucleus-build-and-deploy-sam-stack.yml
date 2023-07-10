@@ -1,0 +1,140 @@
+name: SAM Build and Deploy
+
+on:
+  workflow_call:
+    inputs:
+      node-build-version:
+        description: 'The version of node used in the build'
+        required: false
+        default: '16'
+        type: string
+      region:
+        description: 'AWS Region'
+        required: true
+        default: 'us-west-2'
+        type: string
+      environments:
+        description: 'List of environments to build in the package'
+        required: true
+        type: string
+      archive_logs:
+        description: 'Upload logs to artifacts'
+        required: false
+        default: 'false'
+        type: string
+      archive_build:
+        description: 'Upload build to artifacts'
+        required: false
+        default: 'false'
+        type: string
+
+jobs:
+  dump_contexts_to_log:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dump GitHub context
+        id: github_context_step
+        run: echo '${{ toJSON(github) }}'
+      - name: Dump job context
+        run: echo '${{ toJSON(job) }}'
+      - name: Dump steps context
+        run: echo '${{ toJSON(steps) }}'
+      - name: Dump runner context
+        run: echo '${{ toJSON(runner) }}'
+      - name: Dump strategy context
+        run: echo '${{ toJSON(strategy) }}'
+      - name: Dump matrix context
+        run: echo '${{ toJSON(matrix) }}'
+  prepare:
+    name: "Build and Test"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: set node version
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ inputs.node-build-version}}
+
+      - name: 'Create .npmrc'
+        shell: bash
+        run: |
+            echo "Creating/Updating .npmrc in $PWD"
+            # Create a new .npmrc if there isn't one there already
+            [ ! -e .npmrc ] && echo "registry=https://moetech.jfrog.io/artifactory/api/npm/nucleus-npm/" > ~/.npmrc
+            [ -e .npmrc ] && cp .npmrc ~/.npmrc && echo "" >> ~/.npmrc
+            echo "_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> ~/.npmrc
+            echo "always-auth = true" >> ~/.npmrc
+
+      - name: Configure AWS credentials
+        id: creds
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.SANDBOX_DEPLOY_USER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SANDBOX_DEPLOY_USER_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+
+      - run: npm ci
+      - run: npm run test:coverage
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - run: npx samtsc --build-only --package true --region-postfix --environments ${{inputs.environments}}
+
+      - name: Tar files
+        run: tar -cvf build-artifacts.tar ${{ github.workspace }}
+
+      - name: Archive build directory
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: build-artifacts.tar
+
+  Deploy-ENV:
+    strategy:
+      matrix:
+        stage: [snd3, snd4, dev3, dev4, tst3, tst4, acc3, acc4, prd3, prd4]
+    runs-on: ubuntu-latest
+    environment: 
+      name: ${{ matrix.stage }}
+    needs: prepare
+    steps:
+      - name: set node version
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ inputs.node-build-version}}
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+      - name: Extract files
+        run: tar -xf build-artifacts.tar
+      - name: Display structure of downloaded files
+        run: ls -R
+      - name: 'Create .npmrc'
+        shell: bash
+        run: |
+            echo "Creating/Updating .npmrc in $PWD"
+            # Create a new .npmrc if there isn't one there already
+            [ ! -e .npmrc ] && echo "registry=https://moetech.jfrog.io/artifactory/api/npm/nucleus-npm/" > ~/.npmrc
+            [ -e .npmrc ] && cp .npmrc ~/.npmrc && echo "" >> ~/.npmrc
+            echo "_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> ~/.npmrc
+            echo "always-auth = true" >> ~/.npmrc
+
+      - name: Configure AWS credentials
+        id: creds
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets[vars.AWS_ACCESS_KEY_ID_SECRET_NAME] }}
+          aws-secret-access-key: ${{ secrets[vars.AWS_ACCESS_KEY_SECRET_NAME] }}
+          aws-region: us-west-2
+      - name: Deploy
+        run: |
+          cd home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}
+          npx samtsc --deploy-only --config-env snd
+  
