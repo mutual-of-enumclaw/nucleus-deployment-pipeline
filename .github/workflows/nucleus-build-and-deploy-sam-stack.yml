@@ -98,7 +98,7 @@ jobs:
   Deploy-ENV:
     strategy:
       matrix:
-        stage: [snd3, snd4, dev3, dev4, tst3, tst4, acc3, acc4, prd3, prd4]
+        stage: [snd3, snd4]
     runs-on: ubuntu-latest
     environment: 
       name: ${{ matrix.stage }}
@@ -131,7 +131,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets[vars.AWS_ACCESS_KEY_ID_SECRET_NAME] }}
-          aws-secret-access-key: ${{ secrets[vars.AWS_ACCESS_KEY_SECRET_NAME] }}
+          aws-secret-access-key: ${{ secrets[vars.AWS_SECRET_ACCESS_KEY_SECRET_NAME] }}
           aws-region: us-west-2
       - name: Deploy
         run: |
