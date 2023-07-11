@@ -65,7 +65,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      - run: npx samtsc --build-only --package true --region-postfix --environments snd3,snd4
+      - run: npx samtsc --build-only --package true --region-postfix --environments ${{ vars.ENVIRONMENTS }}
 
       - name: Tar files
         run: tar -cvf build-artifacts.tar ${{ github.workspace }}
@@ -76,10 +76,10 @@ jobs:
           name: build-artifacts
           path: build-artifacts.tar
 
-  Deploy-ENV:
+  Deploy:
     strategy:
       matrix:
-        stage: [snd3, snd4]
+        stage: ${{ vars.ENVIRONMENTS }}
     runs-on: ubuntu-latest
     environment: 
       name: ${{ matrix.stage }}
