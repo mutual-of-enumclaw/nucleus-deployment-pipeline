@@ -8,25 +8,6 @@ on:
         required: false
         default: '16'
         type: string
-      region:
-        description: 'AWS Region'
-        required: true
-        default: 'us-west-2'
-        type: string
-      environments:
-        description: 'List of environments to build in the package'
-        required: true
-        type: string
-      archive_logs:
-        description: 'Upload logs to artifacts'
-        required: false
-        default: 'false'
-        type: string
-      archive_build:
-        description: 'Upload build to artifacts'
-        required: false
-        default: 'false'
-        type: string
 
 jobs:
   dump_contexts_to_log:
@@ -84,7 +65,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      - run: npx samtsc --build-only --package true --region-postfix --environments ${{inputs.environments}}
+      - run: npx samtsc --build-only --package true --region-postfix --environments snd3,snd4
 
       - name: Tar files
         run: tar -cvf build-artifacts.tar ${{ github.workspace }}
