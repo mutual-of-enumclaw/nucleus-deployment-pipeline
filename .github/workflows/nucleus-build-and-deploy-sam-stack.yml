@@ -117,5 +117,5 @@ jobs:
       - name: Deploy
         run: |
           cd home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}
-          npx samtsc --deploy-only --config-env snd
+          npx samtsc --deploy-only --config-env ${{ matrix.stage }}
   
