@@ -77,10 +77,11 @@ jobs:
           path: build-artifacts.tar
 
   Deploy:
-    if: ${{ !cancelled() }}
     strategy:
       matrix:
         stage: ${{ fromJson(vars.ENVIRONMENTS_MATRIX) }}
+      fail-fast: true
+      max-parallel: 1
     runs-on: ubuntu-latest
     environment: 
       name: ${{ matrix.stage }}
