@@ -79,7 +79,7 @@ jobs:
   Deploy:
     strategy:
       matrix:
-        stage: ${{ vars.ENVIRONMENTS }}
+        stage: ${{ fromJson(vars.ENVIRONMENTS_MATRIX) }}
     runs-on: ubuntu-latest
     environment: 
       name: ${{ matrix.stage }}
