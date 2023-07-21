@@ -57,7 +57,7 @@ jobs:
           aws-region: us-west-2
 
       - run: npm ci
-      - run: npm run test:coverage
+      - run: npm run test:coverage --if-present
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
