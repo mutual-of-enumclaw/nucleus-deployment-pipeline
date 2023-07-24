@@ -8,6 +8,10 @@ on:
         required: false
         default: '16'
         type: string
+      prebuild-command:
+        description: 'Command to run before the build step'
+        required: false
+        type: string
 
 jobs:
   dump_contexts_to_log:
@@ -65,7 +69,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      - run: npm run build-package -- --environments ${{ vars.ENVIRONMENTS }}
+      - name: Prebuild
+        if: ${{ inputs.prebuild-command != '' }}
+        run: ${{ inputs.prebuild-command }}
+
+      - name: Build Package
+        run: npm run build-package -- --environments ${{ vars.ENVIRONMENTS }}
 
       - name: Tar files
         run: tar -cvf build-artifacts.tar ${{ github.workspace }}
