@@ -86,6 +86,7 @@ jobs:
           path: build-artifacts.tar
 
   Deploy:
+    name: Deploy ${{github.event.repository.name}}
     strategy:
       matrix:
         stage: ${{ fromJson(vars.ENVIRONMENTS_MATRIX) }}
