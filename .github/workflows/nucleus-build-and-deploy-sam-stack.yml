@@ -14,29 +14,12 @@ on:
         type: string
 
 jobs:
-  dump_contexts_to_log:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Dump GitHub context
-        id: github_context_step
-        run: echo '${{ toJSON(github) }}'
-      - name: Dump job context
-        run: echo '${{ toJSON(job) }}'
-      - name: Dump steps context
-        run: echo '${{ toJSON(steps) }}'
-      - name: Dump runner context
-        run: echo '${{ toJSON(runner) }}'
-      - name: Dump strategy context
-        run: echo '${{ toJSON(strategy) }}'
-      - name: Dump matrix context
-        run: echo '${{ toJSON(matrix) }}'
   prepare:
     name: "Build and Test"
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: GitHubSecurityLab/actions-permissions/monitor@v1
-        with:
-          config: ${{ vars.PERMISSIONS_CONFIG }}
       - name: Checkout
         uses: actions/checkout@v3
 
@@ -90,6 +73,7 @@ jobs:
 
   Deploy:
     name: Deploy ${{ matrix.stage }} ${{github.event.repository.name}}
+    permissions: {}
     strategy:
       matrix:
         stage: ${{ fromJson(vars.ENVIRONMENTS_MATRIX) }}
@@ -100,9 +84,6 @@ jobs:
       name: ${{ matrix.stage }}
     needs: prepare
     steps:
-      - uses: GitHubSecurityLab/actions-permissions/monitor@v1
-        with:
-          config: ${{ vars.PERMISSIONS_CONFIG }}
       - name: set node version
         uses: actions/setup-node@v3
         with:
