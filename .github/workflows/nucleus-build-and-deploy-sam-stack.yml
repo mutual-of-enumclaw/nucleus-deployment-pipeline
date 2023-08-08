@@ -70,6 +70,7 @@ jobs:
         with:
           name: build-artifacts
           path: build-artifacts.tar
+          retention-days: 30
 
   Deploy:
     name: Deploy ${{ matrix.stage }} ${{github.event.repository.name}}
