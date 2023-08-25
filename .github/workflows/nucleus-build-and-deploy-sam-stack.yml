@@ -12,6 +12,10 @@ on:
         description: 'Command to run before the build step'
         required: false
         type: string
+      postdeploy-command: 
+        description: 'Command to run after the deploy step'
+        required: false
+        type: string
 
 jobs:
   prepare:
@@ -118,4 +122,8 @@ jobs:
         run: |
           cd home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}
           npx samtsc --deploy-only --config-env ${{ matrix.stage }}
+      
+      - name: Post Deploy
+        if: ${{ inputs.postdeploy-command != '' }}
+        run: ${{ inputs.postdeploy-command }}
   
