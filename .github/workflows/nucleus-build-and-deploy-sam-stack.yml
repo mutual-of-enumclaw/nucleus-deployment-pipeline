@@ -122,8 +122,24 @@ jobs:
         run: |
           cd home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}
           npx samtsc --deploy-only --config-env ${{ matrix.stage }}
+        
+      - uses: Bardavon-Health/actions-aws-ssm-params-to-env@v1.3.1
+        if: ${{ vars.WEB_DEPLOYMENT_BUCKET_NAME_PARAM }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets[vars.AWS_ACCESS_KEY_ID_SECRET_NAME] }} # required
+          AWS_SECRET_ACCESS_KEY: ${{ secrets[vars.AWS_SECRET_ACCESS_KEY_SECRET_NAME] }} # required
+          AWS_DEFAULT_REGION: us-west-2 # required
+        with:
+          ssm-path: ${{ vars.WEB_DEPLOYMENT_BUCKET_NAME_PARAM }} # required
+          get-children: false # optional, default false
+          prefix: SSM_ # optional
+          decryption: false # optional, default false
+          mask-values: false # optional, default false
       
-      - name: Post Deploy
-        if: ${{ inputs.postdeploy-command != '' }}
-        run: ${{ inputs.postdeploy-command }}
+      - name: Build and Deploy Website      
+        if: ${{ vars.WEB_DEPLOYMENT_BUCKET_NAME_PARAM }}
+        run: |
+          npm run setEnv -- --region ${{ vars.AWS_REGION }} --stage ${{ matrix.stage }} --stage-name ${{ vars.STAGE_NAME }} 
+          npm run build
+          npm run s3sync -- $SSM_WebAppS3BucketName }}
   
