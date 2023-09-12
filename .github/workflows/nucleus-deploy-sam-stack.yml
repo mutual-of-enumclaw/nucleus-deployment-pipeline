@@ -84,6 +84,14 @@ jobs:
         aws-region: ${{ inputs.region}}
 
     - run: npm ci
+    - run: npm run test:coverage --if-present
+
+    - name: SonarCloud Scan
+      continue-on-error: true
+      uses: SonarSource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     - name: SAM Deploy
       # for each env template we would change this from default to match the variables in the sameconfig.toml section.
