@@ -39,7 +39,7 @@ on:
         required: false
       SONAR_TOKEN:
         required: false
-      GITHUB_TOKEN:
+      DEPLOY_USER_GITHUB_TOKEN:
         required: false
 
 jobs:
