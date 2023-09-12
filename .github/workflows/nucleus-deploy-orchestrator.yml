@@ -27,7 +27,7 @@ on:
         required: false
       SONAR_TOKEN:
         required: false
-      DEPLOY_USER_GITHUB_TOKEN:
+      GITHUB_TOKEN:
         required: false
 
 jobs:
