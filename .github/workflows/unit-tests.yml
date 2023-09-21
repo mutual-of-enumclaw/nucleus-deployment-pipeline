@@ -24,10 +24,14 @@ on:
       JFROG_AUTH_TOKEN:
         required: true
       COVERAGE_REPORT_GIST_TOKEN:
-        required: true
+        required: false
       AWS_ACCESS_KEY_ID:
         required: false
       AWS_SECRET_ACCESS_KEY:
+        required: false
+      SONAR_TOKEN:
+        required: false
+      GITHUB_TOKEN:
         required: false
 
 jobs:
@@ -78,32 +82,10 @@ jobs:
 
       - run: npm ci
 
-      - run: npm run lt
+      - run: npm run test:coverage --if-present
       
-      #  Only run the coverage once
-      - if: ${{ matrix.node-version == '14.x' }}
-        name: Get Coverage for badge
-        run: |
-          SUMMARY="$(npm run test:coverage -- --coverageReporters='text-summary' | tail -2 | head -1)"
-          TOKENS=($SUMMARY)
-          echo "COVERAGE=$(echo ${TOKENS[2]})" >> $GITHUB_ENV
-          REF=${{ github.ref }}
-          echo "github.ref: $REF"
-          IFS='/' read -ra REPO <<< "$GITHUB_REPOSITORY"
-          echo "REPOSITORY=$(echo ${REPO[1]})" >> $GITHUB_ENV
-          echo "github.repository: $REPOSITORY"
-          IFS='/' read -ra PATHS <<< "$REF"
-          BRANCH_NAME="${PATHS[1]}_${PATHS[2]}"
-          echo $BRANCH_NAME
-          echo "BRANCH=$(echo ${BRANCH_NAME})" >> $GITHUB_ENV
-      - if: ${{ matrix.node-version == '14.x' }}
-        name: Create the Badge
-        uses: schneegans/dynamic-badges-action@v1.0.0
-        with:
-          auth: ${{ secrets.COVERAGE_REPORT_GIST_TOKEN }}
-          gistID: fe0dd2d20f191c9b64cbe698d93449d5
-          filename: ${{ env.REPOSITORY }}__${{ env.BRANCH }}.json
-          label: Test Coverage
-          message: ${{ env.COVERAGE }}
-          color: green
-          namedLogo: jest
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
