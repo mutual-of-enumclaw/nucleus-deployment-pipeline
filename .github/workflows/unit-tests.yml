@@ -23,6 +23,8 @@ on:
     secrets:
       JFROG_AUTH_TOKEN:
         required: true
+      COVERAGE_REPORT_GIST_TOKEN:
+        required: false        
       AWS_ACCESS_KEY_ID:
         required: false
       AWS_SECRET_ACCESS_KEY:
@@ -88,5 +90,5 @@ jobs:
           args: >
             -Dsonar.test.exclusions=**/*.spec.ts
         env:
-          DEPLOY_USER_GITHUB_TOKEN:: ${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}
+          GITHUB_TOKEN:: ${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
