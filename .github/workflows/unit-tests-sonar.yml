@@ -86,7 +86,8 @@ jobs:
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
-        with:          
+        with:
+          projectBaseDir: /github/workspace
           args: >
             -Dsonar.organization=mutual-of-enumclaw
             -Dsonar.projectKey=mutual-of-enumclaw_nucleus-issue
