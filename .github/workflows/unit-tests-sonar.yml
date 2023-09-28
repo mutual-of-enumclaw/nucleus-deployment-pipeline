@@ -100,9 +100,10 @@ jobs:
           projectBaseDir: /github/workspace
           args: >
             -Dsonar.organization=mutual-of-enumclaw
-            -Dsonar.projectKey=mutual-of-enumclaw_nucleus-issue
+            -Dsonar.projectKey=${{PROJECTKEY}}
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.exclusions=**/*.spec.ts,**/*.json      
         env:
           GITHUB_TOKEN:: ${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          PROJECTKEY: mutual-of-enumclaw_nucleus-issue
