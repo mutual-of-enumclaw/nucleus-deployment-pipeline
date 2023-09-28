@@ -37,21 +37,18 @@ on:
         required: false
 
 jobs:
-  dump_contexts_to_log:
+  set_project_key:
     runs-on: ubuntu-latest
     steps:
-      - name: Dump GitHub context
-        id: github_context_step
-        run: echo '${{ toJSON(github) }}'    
-      - name: Dump repository owner value
-        id: github_context_step2
+      - name: get repo owner
+        id: get_repo_owner
         run: echo "REPO_OWNER=${{ toJSON(github.repository_owner)}} " >> $GITHUB_ENV
-      - name: Dump repository name value
-        id: github_context_step3
+      - name: get repo name
+        id: get_repo_name
         run: echo 'REPO_NAME=${{ toJSON(github.event.pull_request.base.repo.name) }}'  >> $GITHUB_ENV 
-      - name: Concatenate values
-        id: github_context_step4
-        run: echo "${{env.REPO_OWNER}}_${{env.REPO_NAME}}"
+      - name: get project key
+        id: get_project_key
+        run: echo 'PROJECT_KEY=${{env.REPO_OWNER}}_${{env.REPO_NAME}}' >> $GITHUB_ENV
   build:
 
     runs-on: ${{ matrix.os }}
