@@ -42,13 +42,13 @@ jobs:
     steps:
       - name: get repo owner
         id: get_repo_owner
-        run: echo "REPO_OWNER=${{ toJSON(github.repository_owner)}} " >> $GITHUB_ENV
+        run: echo "REPO_OWNER=${{ toJSON(github.repository_owner)}}" >> $GITHUB_ENV
       - name: get repo name
         id: get_repo_name
-        run: echo 'REPO_NAME=${{ toJSON(github.event.pull_request.base.repo.name) }}'  >> $GITHUB_ENV 
+        run: echo "REPO_NAME=${{ toJSON(github.event.pull_request.base.repo.name) }}"  >> $GITHUB_ENV 
       - name: get project key
         id: get_project_key
-        run: echo 'PROJECT_KEY=${{env.REPO_OWNER}}_${{env.REPO_NAME}}' >> $GITHUB_ENV
+        run: echo "PROJECT_KEY=${{env.REPO_OWNER}}_${{env.REPO_NAME}}" >> $GITHUB_ENV
       - name: github env
         id: github_env
         run: echo "$GITHUB_ENV"
