@@ -45,10 +45,13 @@ jobs:
         run: echo '${{ toJSON(github) }}'    
       - name: Dump GitHub context2
         id: github_context_step2
-        run: echo "${{ format('{0}_{1}', ${{toJSON(github.repository_owner)}}, ${{toJSON(github.event.pull_request.base.repo.name)}}) }}"
+        run: echo "REPO_OWNER=${{ toJSON(github.repository_owner)}} " >> $GITHUB_ENV
       - name: Dump GitHub context3
         id: github_context_step3
-        run: echo '${{ toJSON(github.event.pull_request.base.repo.name) }}'        
+        run: echo 'REPO_NAME=${{ toJSON(github.event.pull_request.base.repo.name) }}'  >> $GITHUB_ENV 
+      - name: Dump GitHub context4
+        id: github_context_step4
+        run: echo ${{format('{0}_{1}', env.REPO_OWNER, env.REPO_NAME)}}
   build:
 
     runs-on: ${{ matrix.os }}
