@@ -49,6 +49,9 @@ jobs:
       - name: get project key
         id: get_project_key
         run: echo 'PROJECT_KEY=${{env.REPO_OWNER}}_${{env.REPO_NAME}}' >> $GITHUB_ENV
+      - name: github env
+        id: github_env
+        run: echo "$GITHUB_ENV"
   build:
 
     runs-on: ${{ matrix.os }}
