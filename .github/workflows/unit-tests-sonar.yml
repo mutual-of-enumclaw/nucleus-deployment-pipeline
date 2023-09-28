@@ -45,7 +45,7 @@ jobs:
         run: echo '${{ toJSON(github) }}'    
       - name: Dump GitHub context2
         id: github_context_step2
-        run: echo "${{ format('{0}_{1}', toJSON(github.repository_owner), toJSON(github.event.pull_request.base.repo.name)) }}"
+        run: echo "${{ format('{0}_{1}', ${{toJSON(github.repository_owner)}}, ${{toJSON(github.event.pull_request.base.repo.name)}}) }}"
       - name: Dump GitHub context3
         id: github_context_step3
         run: echo '${{ toJSON(github.event.pull_request.base.repo.name) }}'        
