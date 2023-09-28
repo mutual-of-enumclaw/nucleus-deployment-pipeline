@@ -44,7 +44,7 @@ jobs:
 
       - name: Configure AWS credentials
         id: creds
-        uses: aws-actions/configure-aws-credentials@v3
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.NUCLEUS_SND_DEPLOY_USER_AWS_ACCESS_KEY_ID}}
           aws-secret-access-key: ${{ secrets.NUCLEUS_SND_DEPLOY_USER_AWS_SECRET_ACCESS_KEY }}
@@ -113,7 +113,7 @@ jobs:
 
       - name: Configure AWS credentials
         id: creds
-        uses: aws-actions/configure-aws-credentials@v3
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets[vars.AWS_ACCESS_KEY_ID_SECRET_NAME] }}
           aws-secret-access-key: ${{ secrets[vars.AWS_SECRET_ACCESS_KEY_SECRET_NAME] }}
