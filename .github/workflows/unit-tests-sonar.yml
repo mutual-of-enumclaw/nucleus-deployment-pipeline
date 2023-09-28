@@ -1,6 +1,4 @@
 name: Node.js CI
-env:
- SONAR_PROJECT_KEY: mutual-of-enumclaw_nucleus-issue
 
 on:
  workflow_call:
@@ -107,7 +105,7 @@ jobs:
           projectBaseDir: /github/workspace
           args: >
             -Dsonar.organization=mutual-of-enumclaw
-            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
+            -Dsonar.projectKey=${{ env.PROJECT_KEY }}
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.exclusions=**/*.spec.ts,**/*.json      
         env:
