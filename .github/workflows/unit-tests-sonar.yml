@@ -1,6 +1,5 @@
 name: Node.js CI
-env:
- PROJECT_KEY: default
+
 on:
  workflow_call:
     inputs:
@@ -67,6 +66,10 @@ jobs:
           - ${{ inputs.NODE_VERSIONS }}
 
     steps:
+      - name: github env exists
+        id: github_env_exists
+        run: echo "$GITHUB_ENV"
+        
       - name: Checkout
         uses: actions/checkout@v2
         with:
