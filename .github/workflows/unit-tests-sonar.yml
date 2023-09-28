@@ -1,4 +1,6 @@
 name: Node.js CI
+env:
+ SONAR_PROJECT_KEY: mutual-of-enumclaw_nucleus-issue
 
 on:
  workflow_call:
@@ -43,8 +45,10 @@ jobs:
         run: echo '${{ toJSON(github) }}'    
       - name: Dump GitHub context2
         id: github_context_step2
-        run: echo '${{ toJSON(github.repository_owner) }}_${{ toJSON(github.pull_request.base.repo.name) }}'
-        
+        run: echo '${{ toJSON(github.repository_owner) }}'
+      - name: Dump GitHub context3
+        id: github_context_step3
+        run: echo '${{ toJSON(github.pull_request.base.repo.name) }}'        
   build:
 
     runs-on: ${{ matrix.os }}
@@ -100,10 +104,9 @@ jobs:
           projectBaseDir: /github/workspace
           args: >
             -Dsonar.organization=mutual-of-enumclaw
-            -Dsonar.projectKey=${{PROJECTKEY}}
+            -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.exclusions=**/*.spec.ts,**/*.json      
         env:
           GITHUB_TOKEN:: ${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          PROJECTKEY: mutual-of-enumclaw_nucleus-issue
