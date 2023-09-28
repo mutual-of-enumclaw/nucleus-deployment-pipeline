@@ -1,5 +1,6 @@
 name: Node.js CI
-
+env:
+ PROJECT_KEY: default
 on:
  workflow_call:
     inputs:
@@ -51,7 +52,7 @@ jobs:
         id: github_env
         run: echo "$GITHUB_ENV"
   build:
-
+    needs: set_project_key
     runs-on: ${{ matrix.os }}
 
     defaults:
