@@ -103,7 +103,7 @@ jobs:
           args: >
             -Dsonar.organization=mutual-of-enumclaw
             -Dsonar.projectKey=${{ env.PROJECT_KEY }}
-            -Dsonar.javascript.lcov.reportPaths=/github/workspace/coverage/lcov.info
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.exclusions=**/*.spec.ts,**/*.json      
         env:
           GITHUB_TOKEN:: ${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}
