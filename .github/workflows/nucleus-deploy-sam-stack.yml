@@ -30,11 +30,11 @@ on:
         type: string
     secrets:
       JFROG_AUTH_TOKEN:
-        required: false
+        required: true
       AWS_ACCESS_KEY_ID:
-        required: false
+        required: true
       AWS_SECRET_ACCESS_KEY:
-        required: false
+        required: true
       MS_TEAMS_WEBHOOK_URI:
         required: false
       SONAR_TOKEN:
