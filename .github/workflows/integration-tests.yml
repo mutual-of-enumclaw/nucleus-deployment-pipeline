@@ -27,7 +27,7 @@ on:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
-      TEAMS_INTEGRATION_TEST_WEBHOOK:
+      MS_TEAMS_NUCLEUS_INTEGRATION_TEST_WEBHOOK_URI:
         required: true
 
 jobs:
@@ -48,7 +48,7 @@ jobs:
         if: always()
         with:
           github-token: ${{ github.token }}
-          webhook-uri: ${{ secrets.TEAMS_INTEGRATION_TEST_WEBHOOK }}
+          webhook-uri: ${{ secrets.MS_TEAMS_NUCLEUS_INTEGRATION_TEST_WEBHOOK_URI }}
           card-layout-exit: complete
           show-on-start: false
           show-on-exit: false
