@@ -28,7 +28,7 @@ on:
       AWS_SECRET_ACCESS_KEY:
         required: true
       MS_TEAMS_WEBHOOK_URI:
-        required: false
+        required: true
 
 jobs:
   runTests:
