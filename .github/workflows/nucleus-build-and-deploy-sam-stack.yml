@@ -124,7 +124,7 @@ jobs:
           npx samtsc --deploy-only --config-env ${{ matrix.stage }}
       
       - name: Build and Deploy Website      
-        if: ${{ vars.WEB_DEPLOYMENT_BUCKET_NAME_PARAM != null }} && ${{ vars.AWS_REGION != null }}
+        if: ${{ vars.WEB_DEPLOYMENT_BUCKET_NAME_PARAM != '' }} && ${{ vars.AWS_REGION != '' }}
         run: |
           npm run setEnv -- --region ${{ vars.AWS_REGION }} --stage ${{ matrix.stage }}
           npm run build
