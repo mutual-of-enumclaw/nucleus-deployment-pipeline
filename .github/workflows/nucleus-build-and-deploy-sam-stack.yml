@@ -126,6 +126,7 @@ jobs:
       - name: Build and Deploy Website      
         if: ${{ vars.WEB_DEPLOYMENT_BUCKET_NAME_PARAM != '' && vars.AWS_REGION != '' }}
         run: |
+          cd home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}
           npm run setEnv -- --region ${{ vars.AWS_REGION }} --stage ${{ matrix.stage }}
           npm run build
           npm run s3sync -- ${{ vars.WEB_DEPLOYMENT_BUCKET_NAME_PARAM }}
