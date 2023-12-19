@@ -129,4 +129,6 @@ jobs:
 
       - name: Post Deploy
         if: ${{ vars.POST_DEPLOY_COMMAND != '' }}
-        run: ${{ vars.POST_DEPLOY_COMMAND }}
+        run: |
+          cd home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}
+          ${{ vars.POST_DEPLOY_COMMAND }}
