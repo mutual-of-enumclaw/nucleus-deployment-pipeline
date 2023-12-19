@@ -12,10 +12,6 @@ on:
         description: 'Command to run before the build step'
         required: false
         type: string
-      postdeploy-command: 
-        description: 'Command to run after the deploy step'
-        required: false
-        type: string
 
 jobs:
   prepare:
@@ -130,4 +126,7 @@ jobs:
           npm run setEnv -- --region ${{ vars.AWS_REGION }} --stage ${{ matrix.stage }}
           npm run build
           npm run s3sync -- ${{ vars.WEB_DEPLOYMENT_BUCKET_NAME_PARAM }}
-  
+
+      - name: Post Deploy
+        if: ${{ vars.POST_DEPLOY_COMMAND != '' }}
+        run: ${{ vars.POST_DEPLOY_COMMAND }}
