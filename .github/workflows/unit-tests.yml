@@ -78,14 +78,25 @@ jobs:
           aws-region: ${{ inputs.region}}
 
       - name: 'Create .npmrc'
+        if: ${{ matrix.node-version == '14.x' || matrix.node-version == '16.x' }}
         shell: bash
         run: |
-          echo "Creating/Updating .npmrc in $PWD"
-          # Create a new .npmrc if there isn't one there already
-          [ ! -e .npmrc ] && echo "registry=https://moetech.jfrog.io/artifactory/api/npm/nucleus-npm/" > ~/.npmrc
-          [ -e .npmrc ] && cp .npmrc ~/.npmrc && echo "" >> ~/.npmrc
-          echo "_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> ~/.npmrc
-          echo "always-auth = true" >> ~/.npmrc
+            echo "Creating/Updating .npmrc in $PWD"
+            # Create a new .npmrc if there isn't one there already
+            [ ! -e .npmrc ] && echo "registry=https://moetech.jfrog.io/artifactory/api/npm/nucleus-npm/" > ~/.npmrc
+            [ -e .npmrc ] && cp .npmrc ~/.npmrc && echo "" >> ~/.npmrc
+            echo "_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> ~/.npmrc
+            echo "always-auth = true" >> ~/.npmrc
+    
+      - name: 'Create .npmrc'
+        shell: bash
+        if: ${{ matrix.node-version == '18' || matrix.node-version == '20' }}
+        run: |
+            # Create a new .npmrc if there isn't one there already
+            [ ! -e .npmrc ] && echo "registry=https://moetech.jfrog.io/artifactory/api/npm/nucleus-npm/" > ~/.npmrc
+            [ -e .npmrc ] && cp .npmrc ~/.npmrc && echo "" >> ~/.npmrc
+            echo "//moetech.jfrog.io/artifactory/api/npm/nucleus-npm/:_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> ~/.npmrc
+            echo "always-auth = true" >> ~/.npmrc
 
       - name: Use Node.js ${{ matrix.node-version }} on ${{ matrix.os }}
         uses: actions/setup-node@v1
