@@ -127,7 +127,7 @@ jobs:
           npm run build
           npm run s3sync -- ${{ vars.WEB_DEPLOYMENT_BUCKET_NAME_PARAM }}
           if [[ "${{ vars.WEB_DEPLOYMENT_BUCKET_NAME_PARAM }}" == "s3://nuc-website-${{ matrix.stage }}-website" ]]; then
-            aws s3 sync "s3://nuc-core-${{ vars.STAGE_NAME }}-${{ vars.AWS_REGION }}-importlookupdatas3bucket/data" ./src/assets/data --exact-timestamps
+            aws s3 sync "s3://nuc-core-${{ vars.STAGE_NAME }}-${{ vars.AWS_REGION }}-importlookupdata/data" ./src/assets/data --exact-timestamps
           fi
       - name: Post Deploy
         if: ${{ vars.POST_DEPLOY_COMMAND != '' }}
