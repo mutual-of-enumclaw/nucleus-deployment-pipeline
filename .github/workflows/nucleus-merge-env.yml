@@ -21,13 +21,13 @@ on:
         type: string
     secrets:
       DEPLOY_USER_GITHUB_TOKEN:
-        required: true  
-   
+        required: true
+
 jobs:
   merge-branch:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}
       - name: Merge dev to tst

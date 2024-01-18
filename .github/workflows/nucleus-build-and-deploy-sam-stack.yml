@@ -21,10 +21,10 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: set node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-build-version}}
 
@@ -40,7 +40,7 @@ jobs:
 
       - name: Configure AWS credentials
         id: creds
-        uses: aws-actions/configure-aws-credentials@v3
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.NUCLEUS_SND_DEPLOY_USER_AWS_ACCESS_KEY_ID}}
           aws-secret-access-key: ${{ secrets.NUCLEUS_SND_DEPLOY_USER_AWS_SECRET_ACCESS_KEY }}
@@ -81,12 +81,12 @@ jobs:
       fail-fast: true
       max-parallel: 1
     runs-on: ubuntu-latest
-    environment: 
+    environment:
       name: ${{ matrix.stage }}
     needs: prepare
     steps:
       - name: set node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-build-version}}
       - name: Download build artifacts
@@ -109,7 +109,7 @@ jobs:
 
       - name: Configure AWS credentials
         id: creds
-        uses: aws-actions/configure-aws-credentials@v3
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets[vars.AWS_ACCESS_KEY_ID_SECRET_NAME] }}
           aws-secret-access-key: ${{ secrets[vars.AWS_SECRET_ACCESS_KEY_SECRET_NAME] }}
@@ -118,8 +118,8 @@ jobs:
         run: |
           cd home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}
           npx samtsc --deploy-only --config-env ${{ matrix.stage }}
-      
-      - name: Build and Deploy Website      
+
+      - name: Build and Deploy Website
         if: ${{ vars.WEB_DEPLOYMENT_BUCKET_NAME_PARAM != '' && vars.AWS_REGION != '' }}
         run: |
           cd home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}

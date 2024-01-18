@@ -43,10 +43,10 @@ jobs:
       env-name: ${{ steps.env-name.outputs.environment }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: set node version
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ inputs.node-build-version}}
 
@@ -59,7 +59,7 @@ jobs:
           [ -e .npmrc ] && cp .npmrc ~/.npmrc && echo "" >> ~/.npmrc
           echo "//moetech.jfrog.io/artifactory/api/npm/nucleus-npm/:_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> ~/.npmrc
           echo "always-auth = true" >> ~/.npmrc
-    
+
     - name: Microsoft Teams Deploy Card
       uses: patrickpaulin/ms-teams-deploy-card@master
       if: always()
@@ -74,12 +74,12 @@ jobs:
 
     - name: Configure AWS credentials
       id: creds
-      uses: aws-actions/configure-aws-credentials@v1
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ inputs.region}}
-    
+
     - run: npm ci
     - run: npm run test:coverage --if-present
 
@@ -89,7 +89,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-    
+
     - name: SAM Deploy
       # for each env template we would change this from default to match the variables in the sameconfig.toml section.
       run: npm run deploy -- --config-env ${{ inputs.environment_name }}
@@ -106,4 +106,4 @@ jobs:
       env:
         custom: my environment variable
         requester: ${{ github.actor }}
-        event-name: ${{ github.event_name }} 
+        event-name: ${{ github.event_name }}

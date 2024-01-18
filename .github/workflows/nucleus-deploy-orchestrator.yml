@@ -2,7 +2,7 @@ name: Build and deploy nucleus orchestrator
 
 on:
   workflow_call:
-    inputs:    
+    inputs:
       node-build-version:
         description: 'The version of node used in the build'
         required: false
@@ -38,10 +38,10 @@ jobs:
       env-name: ${{ steps.env-name.outputs.environment }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: set node version
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v4
       with:
         node-version: ${{ inputs.node-build-version}}
 
@@ -68,12 +68,12 @@ jobs:
 
     - name: Configure AWS credentials
       id: creds
-      uses: aws-actions/configure-aws-credentials@v1
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ inputs.region}} 
-    
+        aws-region: ${{ inputs.region}}
+
     - run: npm ci
 
     - run: npm run test:coverage --if-present
@@ -86,7 +86,7 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     - run: npm run activities -- --ssm-name /${{ inputs.environment_name }}/orchestrator/stacks/nucleusorchestratorcore/activities
-    
+
     - name: SAM Deploy
       # for each env template we would change this from default to match the variables in the sameconfig.toml section.
       run: npm run deploy -- --config-env ${{ inputs.environment_name }}
