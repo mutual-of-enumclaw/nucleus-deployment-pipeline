@@ -44,9 +44,18 @@ jobs:
       uses: actions/setup-node@v2
       with:
         node-version: ${{ inputs.node-build-version}}
-    
+
+    - name: 'Create .npmrc'
+      shell: bash
+      run: |
+          # Create a new .npmrc if there isn't one there already
+          [ ! -e .npmrc ] && echo "registry=https://moetech.jfrog.io/artifactory/api/npm/nucleus-npm/" > ~/.npmrc
+          [ -e .npmrc ] && cp .npmrc ~/.npmrc && echo "" >> ~/.npmrc
+          echo "//moetech.jfrog.io/artifactory/api/npm/nucleus-npm/:_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> ~/.npmrc
+          echo "always-auth = true" >> ~/.npmrc
+
     - name: Microsoft Teams Deploy Card
-      uses: patrickpaulin/ms-teams-deploy-card@master
+      uses: mutual-of-enumclaw/ms-teams-deploy-card@main
       if: always()
       with:
         github-token: ${{ github.token }}
