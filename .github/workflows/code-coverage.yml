@@ -1,0 +1,62 @@
+name: Combined Code Coverage
+
+on: [workflow_dispatch]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        repo: ['mutual-of-enumclaw/core', 'mutual-of-enumclaw/lib-services'] # Add more repositories to the list if needed
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v2
+      with:
+        repository: ${{ matrix.repo }}
+        path: ${{ matrix.repo }}
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: 20
+        
+    - name: 'Create .npmrc'
+      shell: bash
+      run: |
+          # Create a new .npmrc if there isn't one there already
+          [ ! -e .npmrc ] && echo "registry=https://moetech.jfrog.io/artifactory/api/npm/nucleus-npm/" > ~/.npmrc
+          [ -e .npmrc ] && cp .npmrc ~/.npmrc && echo "" >> ~/.npmrc
+          echo "//moetech.jfrog.io/artifactory/api/npm/nucleus-npm/:_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> ~/.npmrc
+          echo "always-auth = true" >> ~/.npmrc
+
+    - name: Install dependencies and run tests
+      run: |
+        cd ${{ matrix.repo }}
+        npm install
+        npm run test:coverage
+
+    - name: Upload lcov report
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ matrix.repo }}-coverage-report
+        path: ${{ matrix.repo }}/coverage/lcov.info
+
+  combine:
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Download all workflow run artifacts
+      uses: actions/download-artifact@v2
+    
+    - name: Combine lcov reports
+      run: |
+        npx lcov-result-merger 'mutual-of-enumclaw/core/coverage/lcov.info' 'mutual-of-enumclaw/lib-services/coverage/lcov.info' > combined_lcov.info
+    
+    - name: Upload combined lcov report
+      uses: actions/upload-artifact@v2
+      with:
+        name: combined-coverage-report
+        path: combined_lcov.info
