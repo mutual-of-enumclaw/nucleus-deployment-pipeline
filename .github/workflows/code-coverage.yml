@@ -17,7 +17,7 @@ jobs:
       with:
         repository: ${{ matrix.repo }}
         path: ${{ matrix.repo }}
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
