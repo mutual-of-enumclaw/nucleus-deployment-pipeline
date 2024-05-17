@@ -31,7 +31,7 @@ jobs:
     name: "Build and Test"
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
 
     steps:
       - name: Checkout
@@ -88,7 +88,9 @@ jobs:
 
   Deploy:
     name: Deploy ${{ matrix.stage }} ${{github.event.repository.name}}
-    permissions: {}
+    
+    permissions:
+      contents: write
     strategy:
       matrix:
         stage: ${{ fromJson(vars.ENVIRONMENTS_MATRIX) }}
