@@ -15,6 +15,16 @@ on:
         description: 'Command to run before the build step'
         required: false
         type: string
+      build-aws-access-key-id-name:
+        description: 'The name of the secret containing the AWS access key ID used in the build step'
+        required: false
+        type: string
+        default: 'NUCLEUS_SND_DEPLOY_USER_AWS_ACCESS_KEY_ID'
+      build-aws-secret-access-key-name:
+        description: 'The name of the secret containing the AWS secret access key used in the build step'
+        required: false
+        type: string
+        default: 'NUCLEUS_SND_DEPLOY_USER_AWS_SECRET_ACCESS_KEY'
 
 jobs:
   prepare:
@@ -45,8 +55,8 @@ jobs:
         id: creds
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.NUCLEUS_SND_DEPLOY_USER_AWS_ACCESS_KEY_ID}}
-          aws-secret-access-key: ${{ secrets.NUCLEUS_SND_DEPLOY_USER_AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ secrets[inputs.build-aws-access-key-id-name] }}
+          aws-secret-access-key: ${{ secrets[inputs.build-aws-secret-access-key-name] }}
           aws-region: us-west-2
 
       - run: npm ci
