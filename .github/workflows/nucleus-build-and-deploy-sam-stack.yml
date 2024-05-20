@@ -2,7 +2,7 @@ name: SAM Build and Deploy
 env:
   GITHUB_TOKEN: ${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}
   DRAFT_RELEASE_ENV: 'tst'
-  PUBLISH_RELEASE_ENV: 'prd'
+  PUBLISH_RELEASE_ENV: 'acc'
 on:
   workflow_call:
     inputs:
