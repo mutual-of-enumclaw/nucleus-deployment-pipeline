@@ -1,17 +1,30 @@
 name: SAM Build and Deploy
-
+env:
+  GITHUB_TOKEN: ${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}
+  DRAFT_RELEASE_ENV: 'tst'
+  PUBLISH_RELEASE_ENV: 'acc'
 on:
   workflow_call:
     inputs:
       node-build-version:
         description: 'The version of node used in the build'
         required: false
-        default: '16'
+        default: '20'
         type: string
       prebuild-command:
         description: 'Command to run before the build step'
         required: false
         type: string
+      build-aws-access-key-id-name:
+        description: 'The name of the secret containing the AWS access key ID used in the build step'
+        required: false
+        type: string
+        default: 'NUCLEUS_SND_DEPLOY_USER_AWS_ACCESS_KEY_ID'
+      build-aws-secret-access-key-name:
+        description: 'The name of the secret containing the AWS secret access key used in the build step'
+        required: false
+        type: string
+        default: 'NUCLEUS_SND_DEPLOY_USER_AWS_SECRET_ACCESS_KEY'
 
 jobs:
   prepare:
@@ -19,6 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -42,8 +56,8 @@ jobs:
         id: creds
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.NUCLEUS_SND_DEPLOY_USER_AWS_ACCESS_KEY_ID}}
-          aws-secret-access-key: ${{ secrets.NUCLEUS_SND_DEPLOY_USER_AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ secrets[inputs.build-aws-access-key-id-name] }}
+          aws-secret-access-key: ${{ secrets[inputs.build-aws-secret-access-key-name] }}
           aws-region: us-west-2
 
       - run: npm ci
@@ -52,7 +66,7 @@ jobs:
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
-          GITHUB_TOKEN: ${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ env.GITHUB_TOKEN}}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Prebuild
@@ -74,7 +88,9 @@ jobs:
 
   Deploy:
     name: Deploy ${{ matrix.stage }} ${{github.event.repository.name}}
-    permissions: {}
+    
+    permissions:
+      contents: write
     strategy:
       matrix:
         stage: ${{ fromJson(vars.ENVIRONMENTS_MATRIX) }}
@@ -83,19 +99,27 @@ jobs:
     environment:
       name: ${{ matrix.stage }}
     needs: prepare
-    steps:
+    steps:    
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
       - name: set node version
         uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-build-version}}
+
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
       - name: Extract files
+
         run: tar -xf build-artifacts.tar
       - name: Display structure of downloaded files
         run: ls -R
+
       - name: 'Create .npmrc'
         shell: bash
         run: |
@@ -113,6 +137,7 @@ jobs:
           aws-access-key-id: ${{ secrets[vars.AWS_ACCESS_KEY_ID_SECRET_NAME] }}
           aws-secret-access-key: ${{ secrets[vars.AWS_SECRET_ACCESS_KEY_SECRET_NAME] }}
           aws-region: us-west-2
+
       - name: Deploy
         run: |
           cd home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}
@@ -128,8 +153,139 @@ jobs:
           npm run setEnv -- --region ${{ vars.AWS_REGION }} --stage ${{ matrix.stage }}
           npm run build
           npm run s3sync -- ${{ vars.WEB_DEPLOYMENT_BUCKET_NAME_PARAM }}
+
       - name: Post Deploy
         if: ${{ vars.POST_DEPLOY_COMMAND != '' }}
         run: |
           cd home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}
           ${{ vars.POST_DEPLOY_COMMAND }}
+
+      - name: Create or Update Draft Release
+        if: matrix.stage == env.DRAFT_RELEASE_ENV
+        run: |
+          # Fetch the list of releases
+          response=$(curl --silent -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/repos/$GITHUB_REPOSITORY/releases")
+
+          # Extract the version numbers and sort them
+          sorted_versions=$(echo $response | jq -r '.[].tag_name' | sort -V)
+          echo $sorted_versions
+
+          # Initialize an empty array for the sorted releases
+          sorted_releases="["
+
+          # Loop over the sorted version numbers
+          for version in $sorted_versions; do
+            # Find the release with the current version number
+            release=$(echo $response | jq -r --arg version "$version" '.[] | select(.tag_name == $version)')
+
+            # Add the release to the sorted releases
+            sorted_releases+="$release,"
+          done
+
+          # Remove the trailing comma and close the array
+          sorted_releases="${sorted_releases%,}]"
+
+          # Use the sorted releases
+          releases=$sorted_releases
+
+          # Get the latest release
+          latest_release=$(echo $releases | jq -r '.[-1]')
+          echo $latest_release
+
+          # Get the commit messages since the last published release
+          last_published_release=$(echo $releases | jq -r '[.[] | select(.draft == false)] | .[-1]')
+          echo $last_published_release
+          last_published_release_tag=$(echo $last_published_release | jq -r '.tag_name')
+          echo $last_published_release_tag
+
+          release_notes=$(git log --pretty=format:"%s (%cd) by %an" --date=short $last_published_release_tag..HEAD)
+
+          # Check if the latest release is a draft
+          if [ $(echo $latest_release | jq -r '.draft') == "true" ]; then
+            # Get the name of the latest release
+            draft_tag_name=$(echo $latest_release | jq -r '.tag_name')
+
+            # Delete the old tag
+            git tag -d $draft_tag_name
+            git push origin :refs/tags/$draft_tag_name
+
+            # Update the draft release
+            gh release edit "$draft_tag_name" \
+                --repo="$GITHUB_REPOSITORY" \
+                --title="${GITHUB_REPOSITORY#*/} $draft_tag_name" \
+                --notes="$release_notes" \
+                --draft=true
+
+            # Use the draft release name
+            new_version=$draft_tag_name
+                  
+            # Tag the current commit with the new version number
+            git tag $new_version
+            git push origin $new_version
+
+          else
+
+            # Extract the major, minor, and patch versions
+            tag_name=$(echo $latest_release | jq -r '.tag_name')
+            major=$(echo ${tag_name:-0.0.0} | cut -d. -f1)
+            minor=$(echo ${tag_name:-0.0.0} | cut -d. -f2)
+            patch=$(echo ${tag_name:-0.0.0} | cut -d. -f3)
+
+            # Increment the patch version
+            new_patch=$((patch + 1))
+
+            # Construct the new version number
+            new_version="$major.$minor.$new_patch"
+
+            echo $new_version
+
+            # Tag the current commit with the new version number
+            git tag $new_version
+            git push origin $new_version
+
+            # Create a release with the new version number
+            gh release create "$new_version" \
+                --repo="$GITHUB_REPOSITORY" \
+                --title="${GITHUB_REPOSITORY#*/} $new_version" \
+                --notes="$release_notes" \
+                --draft
+
+            # Use the new version number
+            new_version="$major.$minor.$new_patch"
+          fi
+
+          # Write the new version number to a file
+          echo $new_version > new_version.txt
+
+          # Set the output using an environment file
+          echo "new_version_path=new_version.txt" >> $GITHUB_ENV
+
+      - name: Upload Release Name
+        if: matrix.stage == env.DRAFT_RELEASE_ENV
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-name
+          path: ${{ env.new_version_path }}
+
+      - name: Download Release Name
+        if: matrix.stage == env.PUBLISH_RELEASE_ENV
+        uses: actions/download-artifact@v4
+        with:
+          name: release-name      
+
+      - name: Publish Release
+        if: matrix.stage == env.PUBLISH_RELEASE_ENV
+        run: |
+          # Read the release name from the file
+          release_name=$(cat new_version.txt)
+
+          # Fetch all releases 
+          response=$(curl --silent -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/repos/$GITHUB_REPOSITORY/releases")
+          echo $response
+
+          # Find the release that matches $release_name
+          release=$(echo $response | jq --arg release_name "$release_name" '.[] | select(.name == $release_name)')
+          echo $release
+
+          # Make sure it's a draft release, then publish it
+          gh release view "$release_name" --json isDraft --jq '.isDraft' | grep -q true && gh release edit "$release_name" --repo="$GITHUB_REPOSITORY" --draft=false
