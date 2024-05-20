@@ -76,11 +76,14 @@ jobs:
       - name: Build Package
         run: npm run build-package -- --environments ${{ vars.ENVIRONMENTS }}
 
+      - name: Tar files
+        run: tar -cvf build-artifacts.tar ${{ github.workspace }}
+
       - name: Archive build directory
         uses: actions/upload-artifact@v4
         with:
           name: build-artifacts
-          path: ${{ github.workspace }}
+          path: build-artifacts.tar
           retention-days: 30
 
   Deploy:
@@ -111,6 +114,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: build-artifacts
+      - name: Extract files
+
+        run: tar -xf build-artifacts.tar
+      - name: Display structure of downloaded files
+        run: ls -R
 
       - name: 'Create .npmrc'
         shell: bash
