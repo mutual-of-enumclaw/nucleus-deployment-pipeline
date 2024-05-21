@@ -212,7 +212,7 @@ jobs:
             # Update the draft release
             gh release edit "$draft_tag_name" \
                 --repo="$GITHUB_REPOSITORY" \
-                --title="${GITHUB_REPOSITORY#*/} $draft_tag_name" \
+                --title="$draft_tag_name" \
                 --notes="$release_notes" \
                 --draft=true
 
@@ -246,7 +246,7 @@ jobs:
             # Create a release with the new version number
             gh release create "$new_version" \
                 --repo="$GITHUB_REPOSITORY" \
-                --title="${GITHUB_REPOSITORY#*/} $new_version" \
+                --title="$new_version" \
                 --notes="$release_notes" \
                 --draft
 
