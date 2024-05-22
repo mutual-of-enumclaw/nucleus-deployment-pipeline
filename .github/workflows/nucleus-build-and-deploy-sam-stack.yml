@@ -198,7 +198,8 @@ jobs:
           last_published_release_tag=$(echo $last_published_release | jq -r '.tag_name')
           echo $last_published_release_tag
 
-          release_notes=$(git log --pretty=format:"%s (%cd) by %an" --date=short $last_published_release_tag..HEAD)
+          release_notes=$(git log --pretty=format:"* %s (%cd) by %an" --date=short $last_published_release_tag..HEAD)
+          release_notes="What's Changed\n\n$release_notes"
 
           # Check if the latest release is a draft
           if [ $(echo $latest_release | jq -r '.draft') == "true" ]; then
