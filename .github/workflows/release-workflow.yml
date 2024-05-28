@@ -1,0 +1,155 @@
+name: Shared Release Workflow
+
+on:
+  workflow_call:
+    inputs:
+      DRAFT_RELEASE_ENV:
+        description: 'The environment to create or update draft releases in'
+        required: true
+        type: string
+      PUBLISH_RELEASE_ENV:
+        description: 'The environment to publish releases in'
+        required: true
+        type: string
+      CURRENT_ENV:
+        description: 'The current environment'
+        required: true
+        type: string
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create or Update Draft Release
+        if: inputs.CURRENT_ENV == inputs.DRAFT_RELEASE_ENV
+        run: |
+          # Fetch the list of releases
+          response=$(curl --silent -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/repos/$GITHUB_REPOSITORY/releases")
+
+          # Extract the version numbers and sort them
+          sorted_versions=$(echo $response | jq -r '.[].tag_name' | sort -V)
+          echo $sorted_versions
+
+          # Initialize an empty array for the sorted releases
+          sorted_releases="["
+
+          # Loop over the sorted version numbers
+          for version in $sorted_versions; do
+            # Find the release with the current version number
+            release=$(echo $response | jq -r --arg version "$version" '.[] | select(.tag_name == $version)')
+
+            # Add the release to the sorted releases
+            sorted_releases+="$release,"
+          done
+
+          # Remove the trailing comma and close the array
+          sorted_releases="${sorted_releases%,}]"
+
+          # Use the sorted releases
+          releases=$sorted_releases
+
+          # Get the latest release
+          latest_release=$(echo $releases | jq -r '.[-1]')
+          echo $latest_release
+
+          # Get the commit messages since the last published release
+          last_published_release=$(echo $releases | jq -r '[.[] | select(.draft == false)] | .[-1]')
+          echo $last_published_release
+          last_published_release_tag=$(echo $last_published_release | jq -r '.tag_name')
+          echo $last_published_release_tag
+
+          release_notes=$(git log --pretty=format:"* %s (%cd) by %an" --date=short $last_published_release_tag..HEAD)
+          echo -e "## What's Changed\n\n$release_notes" > release_notes
+
+          # Check if the latest release is a draft
+          if [ $(echo $latest_release | jq -r '.draft') == "true" ]; then
+            # Get the name of the latest release
+            draft_tag_name=$(echo $latest_release | jq -r '.tag_name')
+
+            # Delete the old tag
+            git tag -d $draft_tag_name
+            git push origin :refs/tags/$draft_tag_name
+
+            # Update the draft release
+            gh release edit "$draft_tag_name" \
+                --repo="$GITHUB_REPOSITORY" \
+                --title="$draft_tag_name" \
+                --notes="$release_notes" \
+                --draft=true
+
+            # Use the draft release name
+            new_version=$draft_tag_name
+                  
+            # Tag the current commit with the new version number
+            git tag $new_version
+            git push origin $new_version
+
+          else
+
+            # Extract the major, minor, and patch versions
+            tag_name=$(echo $latest_release | jq -r '.tag_name')
+            major=$(echo ${tag_name:-0.0.0} | cut -d. -f1)
+            minor=$(echo ${tag_name:-0.0.0} | cut -d. -f2)
+            patch=$(echo ${tag_name:-0.0.0} | cut -d. -f3)
+
+            # Increment the patch version
+            new_patch=$((patch + 1))
+
+            # Construct the new version number
+            new_version="$major.$minor.$new_patch"
+
+            echo $new_version
+
+            # Tag the current commit with the new version number
+            git tag $new_version
+            git push origin $new_version
+
+            # Create a release with the new version number
+            gh release create "$new_version" \
+                --repo="$GITHUB_REPOSITORY" \
+                --title="$new_version" \
+                --notes="$release_notes" \
+                --draft
+
+            # Use the new version number
+            new_version="$major.$minor.$new_patch"
+          fi
+
+          # Write the new version number to a file
+          echo $new_version > new_version.txt
+
+          # Set the output using an environment file
+          echo "new_version_path=new_version.txt" >> $GITHUB_ENV
+
+      - name: Upload Release Name
+        if: inputs.CURRENT_ENV == inputs.DRAFT_RELEASE_ENV
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-name
+          path: ${{ env.new_version_path }}
+
+      - name: Download Release Name
+        if: inputs.CURRENT_ENV == inputs.PUBLISH_RELEASE_ENV
+        uses: actions/download-artifact@v4
+        with:
+          name: release-name      
+
+      - name: Publish Release
+        if: inputs.CURRENT_ENV == inputs.PUBLISH_RELEASE_ENV
+        run: |
+          # Read the release name from the file
+          release_name=$(cat new_version.txt)
+
+          # Fetch all releases 
+          response=$(curl --silent -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/repos/$GITHUB_REPOSITORY/releases")
+          echo $response
+
+          # Find the release that matches $release_name
+          release=$(echo $response | jq --arg release_name "$release_name" '.[] | select(.name == $release_name)')
+          echo $release
+
+          # Make sure it's a draft release, then publish it
+          gh release view "$release_name" --json isDraft --jq '.isDraft' | grep -q true && gh release edit "$release_name" --repo="$GITHUB_REPOSITORY" --draft=false
