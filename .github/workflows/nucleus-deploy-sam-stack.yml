@@ -101,14 +101,14 @@ jobs:
       run: npm run deploy -- --config-env ${{ inputs.environment_name }}
 
     - name: Archive npm logs
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if:  ${{ always() && inputs.archive_logs == 'true' }}
       with:
         name: npm-logs
         path: /home/runner/.npm/_logs
 
     - name: Archive build directory
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if:  ${{ always() && inputs.archive_build == 'true' }}
       with:
         name: build-artifacts
