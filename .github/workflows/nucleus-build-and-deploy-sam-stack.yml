@@ -83,6 +83,16 @@ jobs:
           name: build-artifacts
           path: build-artifacts.tar
           retention-days: 30
+  
+  common-steps-job:
+    uses: ./.github/workflows/common-steps.yml@testSharedStep
+    with:
+      node-build-version: '20'  
+      aws-access-key-id-name: ${{ secrets.AWS_ACCESS_KEY_ID_NAME }}
+      aws-secret-access-key-name: ${{ secrets.AWS_SECRET_ACCESS_KEY_NAME }}
+    secrets:
+      JFROG_AUTH_TOKEN: ${{ secrets.JFROG_AUTH_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   deploy-snd-dev:
     name: Deploy snd and dev
@@ -90,16 +100,12 @@ jobs:
     needs: prepare
     strategy:
       matrix:
-        stage: [snd, snd2, dev, dev2]
+        stage: [snd, dev]
     environment:
       name: ${{ matrix.stage }}
     steps:
-      - name: Common Steps
-        uses: ./.github/workflows/common-steps.yml@testSharedStep
-        with:
-          node-build-version: ${{ inputs.node-build-version }}
-          aws-access-key-id-name: ${{ inputs.build-aws-access-key-id-name }}
-          aws-secret-access-key-name: ${{ inputs.build-aws-secret-access-key-name }}
+      - name: Checkout
+        uses: actions/checkout@v2
 
       - name: Deploy
         run: |
