@@ -1,0 +1,61 @@
+name: Common Steps
+
+on:
+  workflow_call:
+    inputs:
+      node-build-version:
+        type: string
+        required: true
+      aws-access-key-id-name:
+        type: string
+        required: true
+      aws-secret-access-key-name:
+        type: string
+        required: true
+    secrets:
+      JFROG_AUTH_TOKEN:
+        required: true
+      GITHUB_TOKEN:
+        required: true
+
+jobs:
+  common-steps:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set Node Version
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-build-version }}
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+
+      - name: Extract Files
+        run: tar -xf build-artifacts.tar
+
+      - name: Display Structure of Downloaded Files
+        run: ls -R
+
+      - name: Create .npmrc
+        shell: bash
+        run: |
+          echo "Creating/Updating .npmrc in $PWD"
+          [ ! -e .npmrc ] && echo "registry=https://moetech.jfrog.io/artifactory/api/npm/nucleus-npm/" > ~/.npmrc
+          [ -e .npmrc ] && cp .npmrc ~/.npmrc && echo "" >> ~/.npmrc
+          echo "//moetech.jfrog.io/artifactory/api/npm/nucleus-npm/:_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> ~/.npmrc
+          echo "always-auth = true" >> ~/.npmrc
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets[inputs.aws-access-key-id-name] }}
+          aws-secret-access-key: ${{ secrets[inputs.aws-secret-access-key-name] }}
+          aws-region: us-west-2

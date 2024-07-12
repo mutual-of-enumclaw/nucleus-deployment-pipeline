@@ -84,85 +84,98 @@ jobs:
           path: build-artifacts.tar
           retention-days: 30
 
-  Deploy:
-    name: Deploy ${{ matrix.stage }} ${{github.event.repository.name}}
-    
-    permissions:
-      contents: write
+  deploy-snd-dev:
+    name: Deploy snd and dev
+    runs-on: ubuntu-latest
+    needs: prepare
     strategy:
       matrix:
-        stage: ${{ fromJson(vars.ENVIRONMENTS_MATRIX) }}
-      fail-fast: false
-    runs-on: ubuntu-latest
+        stage: [snd, snd2, dev, dev2]
     environment:
       name: ${{ matrix.stage }}
-    needs: prepare
-    steps:    
-      - name: Checkout
-        uses: actions/checkout@v4
+    steps:
+      - name: Common Steps
+        uses: ./.github/workflows/common-steps.yml
         with:
-          fetch-depth: 0
-      
-      - name: set node version
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ inputs.node-build-version}}
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-      - name: Extract files
-
-        run: tar -xf build-artifacts.tar
-      - name: Display structure of downloaded files
-        run: ls -R
-
-      - name: 'Create .npmrc'
-        shell: bash
-        run: |
-            echo "Creating/Updating .npmrc in $PWD"
-            # Create a new .npmrc if there isn't one there already
-            [ ! -e .npmrc ] && echo "registry=https://moetech.jfrog.io/artifactory/api/npm/nucleus-npm/" > ~/.npmrc
-            [ -e .npmrc ] && cp .npmrc ~/.npmrc && echo "" >> ~/.npmrc
-            echo "//moetech.jfrog.io/artifactory/api/npm/nucleus-npm/:_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> ~/.npmrc
-            echo "always-auth = true" >> ~/.npmrc
-
-      - name: Configure AWS credentials
-        id: creds
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets[vars.AWS_ACCESS_KEY_ID_SECRET_NAME] }}
-          aws-secret-access-key: ${{ secrets[vars.AWS_SECRET_ACCESS_KEY_SECRET_NAME] }}
-          aws-region: us-west-2
+          node-build-version: ${{ inputs.node-build-version }}
+          aws-access-key-id-name: ${{ inputs.build-aws-access-key-id-name }}
+          aws-secret-access-key-name: ${{ inputs.build-aws-secret-access-key-name }}
 
       - name: Deploy
         run: |
           cd home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}
           npx samtsc --deploy-only --config-env ${{ matrix.stage }}
 
-      - name: Build and Deploy Website
-        if: ${{ vars.WEB_DEPLOYMENT_BUCKET_NAME_PARAM != '' && vars.AWS_REGION != '' }}
-        run: |
-          cd home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}
-          if [[ "${{ vars.WEB_DEPLOYMENT_BUCKET_NAME_PARAM }}" == "s3://nuc-website-${{ matrix.stage }}-website" ]]; then
-            aws s3 sync "s3://nuc-core-${{ vars.STAGE_NAME }}-${{ vars.AWS_REGION }}-importlookupdata/data" ./src/assets/data --exact-timestamps
-          fi
-          npm run setEnv -- --region ${{ vars.AWS_REGION }} --stage ${{ matrix.stage }}
-          npm run build
-          npm run s3sync -- ${{ vars.WEB_DEPLOYMENT_BUCKET_NAME_PARAM }}
-
-      - name: Post Deploy
-        if: ${{ vars.POST_DEPLOY_COMMAND != '' }}
-        run: |
-          cd home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}
-          ${{ vars.POST_DEPLOY_COMMAND }}
-
-      - name: Manage Release
-        uses: mutual-of-enumclaw/action-manage-release@v1
+  deploy-tst:
+    name: Deploy tst
+    runs-on: ubuntu-latest
+    needs: deploy-snd-dev
+    environment:
+      name: tst
+      url: ${{ steps.deployment.outputs.environment_url }}
+    steps:
+      - name: Common Steps
+        uses: ./.github/workflows/common-steps.yml
         with:
-          DRAFT_RELEASE_ENV: tst
-          PUBLISH_RELEASE_ENV: acc
-          CURRENT_ENV: ${{ matrix.stage }}
-          VERSION_TYPE: patch
-          GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+          node-build-version: ${{ inputs.node-build-version }}
+          aws-access-key-id-name: ${{ inputs.build-aws-access-key-id-name }}
+          aws-secret-access-key-name: ${{ inputs.build-aws-secret-access-key-name }}
+
+      - name: Deploy
+        run: |
+          cd home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}
+          npx samtsc --deploy-only --config-env tst
+
+      - name: Wait for approval
+        if: success()
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          event-type: deploy-approval
+
+  deploy-acc:
+    name: Deploy acc
+    runs-on: ubuntu-latest
+    needs: deploy-tst
+    environment:
+      name: acc
+      url: ${{ steps.deployment.outputs.environment_url }}
+    steps:
+      - name: Common Steps
+        uses: ./.github/workflows/common-steps.yml
+        with:
+          node-build-version: ${{ inputs.node-build-version }}
+          aws-access-key-id-name: ${{ inputs.build-aws-access-key-id-name }}
+          aws-secret-access-key-name: ${{ inputs.build-aws-secret-access-key-name }}
+
+      - name: Deploy
+        run: |
+          cd home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}
+          npx samtsc --deploy-only --config-env acc
+
+      - name: Wait for approval
+        if: success()
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          event-type: deploy-approval
+
+  deploy-prd:
+    name: Deploy prd
+    runs-on: ubuntu-latest
+    needs: deploy-acc
+    environment:
+      name: prd
+      url: ${{ steps.deployment.outputs.environment_url }}
+    steps:
+      - name: Common Steps
+        uses: ./.github/workflows/common-steps.yml
+        with:
+          node-build-version: ${{ inputs.node-build-version }}
+          aws-access-key-id-name: ${{ inputs.build-aws-access-key-id-name }}
+          aws-secret-access-key-name: ${{ inputs.build-aws-secret-access-key-name }}
+
+      - name: Deploy
+        run: |
+          cd home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}
+          npx samtsc --deploy-only --config-env prd
+
+  
