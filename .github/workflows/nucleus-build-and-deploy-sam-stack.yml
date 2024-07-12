@@ -92,7 +92,6 @@ jobs:
       aws-secret-access-key-name: ${{ secrets.AWS_SECRET_ACCESS_KEY_NAME }}
     secrets:
       JFROG_AUTH_TOKEN: ${{ secrets.JFROG_AUTH_TOKEN }}
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   deploy-snd-dev:
     name: Deploy snd and dev
