@@ -89,6 +89,9 @@ jobs:
     with:
       node-build-version: '20'  
       aws-region: us-west-2
+      aws-access-key-id-name: ${{ inputs.build-aws-access-key-id-name }}
+      aws-secret-access-key-name: ${{ inputs.build-aws-secret-access-key-name }}
+      
     secrets:
       JFROG_AUTH_TOKEN: ${{ secrets.JFROG_AUTH_TOKEN }}
 
