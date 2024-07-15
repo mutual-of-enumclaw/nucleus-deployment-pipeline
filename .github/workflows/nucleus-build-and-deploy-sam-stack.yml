@@ -88,8 +88,9 @@ jobs:
     uses: ./.github/workflows/common-steps.yml
     with:
       node-build-version: '20'  
-      aws-access-key-id: ${{ secrets[inputs.build-aws-access-key-id-name] }}
-      aws-secret-access-key: ${{ secrets[inputs.build-aws-secret-access-key-name] }}
+      aws-access-key-id: ${{ secrets[vars.AWS_ACCESS_KEY_ID_SECRET_NAME] }}
+      aws-secret-access-key: ${{ secrets[vars.AWS_SECRET_ACCESS_KEY_SECRET_NAME] }}
+      aws-region: us-west-2
     secrets:
       JFROG_AUTH_TOKEN: ${{ secrets.JFROG_AUTH_TOKEN }}
 
