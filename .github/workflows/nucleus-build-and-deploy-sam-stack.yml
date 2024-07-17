@@ -54,8 +54,8 @@ jobs:
         id: creds
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets[inputs.build-aws-access-key-id-name] }}
-          aws-secret-access-key: ${{ secrets[inputs.build-aws-secret-access-key-name] }}
+          aws-access-key-id: ${{ inputs.build-aws-access-key-id-name }}
+          aws-secret-access-key: ${{ inputs.build-aws-secret-access-key-name }}
           aws-region: us-west-2
 
       - run: npm ci
@@ -89,8 +89,8 @@ jobs:
     uses: ./.github/workflows/common-steps.yml
     with:
       node-build-version: '20'  
-      aws-access-key-id: ${{ secrets[inputs.build-aws-access-key-id-name] }}
-      aws-secret-access-key: ${{ secrets[inputs.build-aws-secret-access-key-name] }}
+      aws-access-key-id: ${{ inputs.build-aws-access-key-id-name }}
+      aws-secret-access-key: ${{ inputs.build-aws-secret-access-key-name }}
 
     secrets:
       JFROG_AUTH_TOKEN: ${{ secrets.JFROG_AUTH_TOKEN }}
@@ -125,8 +125,8 @@ jobs:
         uses: ./.github/workflows/common-steps.yml
         with:
           node-build-version: ${{ inputs.node-build-version }}
-          aws-access-key-id: ${{ secrets[inputs.build-aws-access-key-id-name] }}
-          aws-secret-access-key: ${{ secrets[inputs.build-aws-secret-access-key-name] }}
+          aws-access-key-id: ${{ inputs.build-aws-access-key-id-name }}
+          aws-secret-access-key: ${{ inputs.build-aws-secret-access-key-name }}
 
       - name: Deploy
         run: |
