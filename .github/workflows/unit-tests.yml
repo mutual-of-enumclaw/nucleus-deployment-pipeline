@@ -107,3 +107,16 @@ jobs:
         env:
           GITHUB_TOKEN:: ${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      
+      - name: Add plantuml for markdown
+        run: npm i -g puml-for-markdown
+        shell: bash
+
+      - name: Embed plantuml in markdown
+        run: puml-for-markdown
+        shell: bash
+
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Embed plantuml diagrams in markdown"
