@@ -30,39 +30,31 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: set node version
+      - name: Setup node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-build-version}}
-
-      - name: 'Create .npmrc'
-        shell: bash
-        run: |
-            echo "Creating/Updating .npmrc in $PWD"
-            # Create a new .npmrc if there isn't one there already
-            [ ! -e .npmrc ] && echo "registry=https://moetech.jfrog.io/artifactory/api/npm/nucleus-npm/" > ~/.npmrc
-            [ -e .npmrc ] && cp .npmrc ~/.npmrc && echo "" >> ~/.npmrc
-            echo "//moetech.jfrog.io/artifactory/api/npm/nucleus-npm/:_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> ~/.npmrc
-            echo "always-auth = true" >> ~/.npmrc
+          registry-url: https://moetech.jfrog.io/artifactory/api/npm/nucleus-npm/
 
       - name: Configure AWS credentials
         id: creds
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets[inputs.build-aws-access-key-id-name] }}
-          aws-secret-access-key: ${{ secrets[inputs.build-aws-secret-access-key-name] }}
+          aws-access-key-id: ${{ secrets.NUCLEUS_SND_DEPLOY_USER_AWS_ACCESS_KEY_ID}}
+          aws-secret-access-key: ${{ secrets.NUCLEUS_SND_DEPLOY_USER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
 
       - run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.JFROG_AUTH_TOKEN }}
       - run: npm run test:coverage --if-present
 
       - name: SonarCloud Scan
-        uses: sonarsource/sonarqube-scan-action@v4
+        uses: SonarSource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ env.GITHUB_TOKEN}}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -72,7 +64,9 @@ jobs:
         run: ${{ inputs.prebuild-command }}
 
       - name: Build Package
-        run: npm run build-package -- --environments ${{ vars.ENVIRONMENTS }}
+        run: |
+          npm run build
+          npm run package -- ${{ vars.ENVIRONMENTS }}
 
       - name: Tar files
         run: tar -cvf build-artifacts.tar ${{ github.workspace }}
@@ -97,12 +91,7 @@ jobs:
     environment:
       name: ${{ matrix.stage }}
     needs: prepare
-    steps:    
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      
+    steps:
       - name: set node version
         uses: actions/setup-node@v4
         with:
@@ -117,17 +106,6 @@ jobs:
         run: tar -xf build-artifacts.tar
       - name: Display structure of downloaded files
         run: ls -R
-
-      - name: 'Create .npmrc'
-        shell: bash
-        run: |
-            echo "Creating/Updating .npmrc in $PWD"
-            # Create a new .npmrc if there isn't one there already
-            [ ! -e .npmrc ] && echo "registry=https://moetech.jfrog.io/artifactory/api/npm/nucleus-npm/" > ~/.npmrc
-            [ -e .npmrc ] && cp .npmrc ~/.npmrc && echo "" >> ~/.npmrc
-            echo "//moetech.jfrog.io/artifactory/api/npm/nucleus-npm/:_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> ~/.npmrc
-            echo "always-auth = true" >> ~/.npmrc
-
       - name: Configure AWS credentials
         id: creds
         uses: aws-actions/configure-aws-credentials@v4
@@ -139,8 +117,7 @@ jobs:
       - name: Deploy
         run: |
           cd home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}
-          npx samtsc --deploy-only --config-env ${{ matrix.stage }}
-
+          sam deploy --config-env ${{ matrix.stage }} --no-fail-on-empty-changeset
       - name: Build and Deploy Website
         if: ${{ vars.WEB_DEPLOYMENT_BUCKET_NAME_PARAM != '' && vars.AWS_REGION != '' }}
         run: |
@@ -156,8 +133,7 @@ jobs:
         if: ${{ vars.POST_DEPLOY_COMMAND != '' }}
         run: |
           cd home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}
-          ${{ vars.POST_DEPLOY_COMMAND }}
-
+          ${{ vars.POST_DEPLOY_COMMAND }} -- ${{ matrix.stage }} --region ${{ vars.AWS_REGION }}
       - name: Manage Release
         uses: mutual-of-enumclaw/action-manage-release@v1
         with:
