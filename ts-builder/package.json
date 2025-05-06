@@ -1,0 +1,17 @@
+{
+  "name": "@moe-tech/nucleus-ts-builder",
+  "version": "1.0.8",
+  "description": "Builds a package from typescript",
+  "main": "build.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "Mutual of Enumclaw",
+  "license": "ISC",
+  "dependencies": {
+    "@moe-tech/policysystem": "^2.0.55",
+    "esbuild": "^0.25.2",
+    "npm-dts": "^1.3.13"
+  },
+  "bin": "./build.js"
+}
