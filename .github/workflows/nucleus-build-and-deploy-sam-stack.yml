@@ -166,3 +166,28 @@ jobs:
           CURRENT_ENV: ${{ matrix.stage }}
           VERSION_TYPE: patch
           GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+
+  embed-puml-markdown:
+    runs-on: ubuntu-latest
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit and push the
+      # added or changed files to the repository.
+      contents: write
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}
+      
+      - name: Embed PlantUML inside Markdown
+        uses: alessandro-marcantoni/puml-markdown@v0.1.1
+
+      - name: Commit changes
+        shell: bash
+        run: |
+            git config --global user.name 'build-user-mutualofenumclaw'
+            git config --global user.email 'build-user-mutualofenumclaw@users.noreply.github.com'
+            git commit -am "Update diagrams" || echo "No changes to commit"
+            git push || echo "No changes to push"
