@@ -191,3 +191,13 @@ jobs:
             git config --global user.email 'build-user-mutualofenumclaw@users.noreply.github.com'
             git commit -am "Update diagrams" || echo "No changes to commit"
             git push || echo "No changes to push"
+
+      - name: Update Confluence Page with README
+        if: ${{ vars.CONFLUENCE_PAGE_ID != '' }}
+        uses: cupcakearmy/confluence-markdown-sync@v1
+        with:
+          from: './README.md'
+          to: ${{ vars.CONFLUENCE_PAGE_ID }}
+          cloud: mutualofenumclaw
+          user: ${{ secrets.CONFLUENCE_MARKDOWN_SYNC_USER }}
+          token: ${{ secrets.CONFLUENCE_MARKDOWN_SYNC_API_KEY }}
