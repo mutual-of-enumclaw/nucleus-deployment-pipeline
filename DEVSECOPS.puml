@@ -1,0 +1,49 @@
+@startuml
+title DevSecOps Pipeline - SAM Build and Deploy (GitHub Actions)
+
+actor Developer
+participant "GitHub Actions" as GitHub
+participant "JFrog Artifactory" as JFrog
+participant "AWS" as AWS
+participant "SonarCloud" as Sonar
+participant "Confluence" as Confluence
+
+== Build Phase ==
+Developer -> GitHub: Push code / Trigger workflow_call
+GitHub -> GitHub: Checkout repository
+GitHub -> GitHub: Setup Node.js (v20)
+GitHub -> JFrog: Authenticate via .npmrc (JFROG_AUTH_TOKEN)
+GitHub -> AWS: Configure AWS credentials (build secrets)
+GitHub -> GitHub: npm ci
+GitHub -> GitHub: Run tests (npm run test:coverage)
+GitHub -> Sonar: Run SonarCloud Scan
+GitHub -> GitHub: Execute prebuild command (if provided)
+GitHub -> GitHub: Build package (npm run build-package)
+GitHub -> GitHub: Create build-artifacts.tar
+GitHub -> GitHub: Upload artifact
+
+== Deploy Phase ==
+GitHub -> GitHub: Matrix deploy to ENVIRONMENTS_MATRIX
+GitHub -> GitHub: Checkout repository
+GitHub -> GitHub: Setup Node.js (v20)
+GitHub -> GitHub: Download and extract artifacts
+GitHub -> JFrog: Authenticate via .npmrc (again)
+GitHub -> AWS: Configure AWS credentials (stage-based)
+GitHub -> AWS: Deploy via samtsc --deploy-only
+alt Web Deployment Enabled
+  GitHub -> AWS: Sync importlookupdata from core S3 bucket
+  GitHub -> GitHub: npm run build, setEnv, s3sync
+end
+alt Post Deploy Command Exists
+  GitHub -> GitHub: Execute POST_DEPLOY_COMMAND
+end
+GitHub -> GitHub: Manage release (draft/publish)
+
+== Documentation ==
+GitHub -> GitHub: Embed PlantUML to Markdown
+GitHub -> GitHub: Commit diagram to repo
+alt Confluence Sync Enabled
+  GitHub -> Confluence: Sync README.md to page
+end
+
+@enduml
