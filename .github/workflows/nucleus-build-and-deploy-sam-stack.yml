@@ -25,11 +25,13 @@ on:
         default: 'NUCLEUS_SND_DEPLOY_USER_AWS_SECRET_ACCESS_KEY'
 
 jobs:
-  prepare:
-    name: "Build and Test"
+  setup:
+    name: "Setup Dependencies"
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    outputs:
+      cache-key: ${{ steps.cache-key.outputs.key }}
 
     steps:
       - name: Checkout
@@ -40,7 +42,21 @@ jobs:
         with:
           node-version: ${{ inputs.node-build-version}}
 
+      - name: Generate cache key
+        id: cache-key
+        run: echo "key=node-modules-${{ runner.os }}-${{ inputs.node-build-version }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/.npmrc') || 'no-npmrc' }}" >> $GITHUB_OUTPUT
+
+      - name: Cache .npmrc and node modules
+        uses: actions/cache@v4
+        id: cache-dependencies
+        with:
+          path: |
+            node_modules
+            ~/.npmrc
+          key: ${{ steps.cache-key.outputs.key }}
+
       - name: 'Create .npmrc'
+        if: steps.cache-dependencies.outputs.cache-hit != 'true'
         shell: bash
         run: |
             echo "Creating/Updating .npmrc in $PWD"
@@ -50,15 +66,36 @@ jobs:
             echo "//moetech.jfrog.io/artifactory/api/npm/nucleus-npm/:_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> ~/.npmrc
             echo "always-auth = true" >> ~/.npmrc
 
-      - name: Configure AWS credentials
-        id: creds
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets[inputs.build-aws-access-key-id-name] }}
-          aws-secret-access-key: ${{ secrets[inputs.build-aws-secret-access-key-name] }}
-          aws-region: us-west-2
+      - name: Install dependencies
+        if: steps.cache-dependencies.outputs.cache-hit != 'true'
+        run: npm ci
 
-      - run: npm ci
+  sonar-scan:
+    name: "SonarCloud Scan"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    needs: setup
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: set node version
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-build-version}}
+
+      - name: Restore cached dependencies
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            ~/.npmrc
+          key: ${{ needs.setup.outputs.cache-key }}
+
       - run: npm run test:coverage --if-present
 
       - name: SonarCloud Scan
@@ -66,6 +103,30 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ env.GITHUB_TOKEN}}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  build-package:
+    name: "Build Package"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    needs: setup
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: set node version
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-build-version}}
+
+      - name: Restore cached dependencies
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            ~/.npmrc
+          key: ${{ needs.setup.outputs.cache-key }}
 
       - name: Prebuild
         if: ${{ inputs.prebuild-command != '' }}
@@ -96,7 +157,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: ${{ matrix.stage }}
-    needs: prepare
+    needs: [setup, sonar-scan, build-package]
     steps:    
       - name: Checkout
         uses: actions/checkout@v4
@@ -118,15 +179,13 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R
 
-      - name: 'Create .npmrc'
-        shell: bash
-        run: |
-            echo "Creating/Updating .npmrc in $PWD"
-            # Create a new .npmrc if there isn't one there already
-            [ ! -e .npmrc ] && echo "registry=https://moetech.jfrog.io/artifactory/api/npm/nucleus-npm/" > ~/.npmrc
-            [ -e .npmrc ] && cp .npmrc ~/.npmrc && echo "" >> ~/.npmrc
-            echo "//moetech.jfrog.io/artifactory/api/npm/nucleus-npm/:_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> ~/.npmrc
-            echo "always-auth = true" >> ~/.npmrc
+      - name: Restore cached dependencies
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+            ~/.npmrc
+          key: ${{ needs.setup.outputs.cache-key }}
 
       - name: Configure AWS credentials
         id: creds
