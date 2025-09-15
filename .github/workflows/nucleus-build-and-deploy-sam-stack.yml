@@ -225,6 +225,41 @@ jobs:
           cd home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}
           ${{ vars.POST_DEPLOY_COMMAND }}
 
+      # 👇 Notifications after everything in Deploy job
+      - name: Compute commits URL
+        id: commits
+        if: ${{ always() }}
+        run: |
+          if [ -n "${{ github.event.before }}" ] && [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
+            echo "url=https://github.com/${{ github.repository }}/compare/${{ github.event.before }}...${{ github.sha }}" >> $GITHUB_OUTPUT
+          else
+            echo "url=https://github.com/${{ github.repository }}/commit/${{ github.sha }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Notify Teams (Deploy Succeeded)
+        if: ${{ success() }}
+        uses: jdcargile/ms-teams-notification@v1.4
+        with:
+          github-token: ${{ github.token }}
+          ms-teams-webhook-uri: ${{ secrets.NUCLEUS_DEPLOYMENT_ALERTS_TEAMS_WEBHOOK }}
+          notification-summary: |
+            ✅ Deploy succeeded: ${{ github.event.repository.name }} → ${{ matrix.stage }}
+            Run #${{ github.run_number }} by @${{ github.actor }}
+            [View Commits](${{ steps.commits.outputs.url }})
+          notification-color: 28a745
+
+      - name: Notify Teams (Deploy Failed)
+        if: ${{ failure() }}
+        uses: jdcargile/ms-teams-notification@v1.4
+        with:
+          github-token: ${{ github.token }}
+          ms-teams-webhook-uri: ${{ secrets.NUCLEUS_DEPLOYMENT_ALERTS_TEAMS_WEBHOOK }}
+          notification-summary: |
+            ❌ Deploy failed: ${{ github.event.repository.name }} → ${{ matrix.stage }}
+            Run #${{ github.run_number }} by @${{ github.actor }}
+            [View Commits](${{ steps.commits.outputs.url }})
+          notification-color: dc3545
+
       - name: Manage Release
         uses: mutual-of-enumclaw/action-manage-release@v1
         with:
