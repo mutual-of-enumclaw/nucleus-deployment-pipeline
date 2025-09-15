@@ -226,16 +226,7 @@ jobs:
           ${{ vars.POST_DEPLOY_COMMAND }}
 
       # 👇 Notifications after everything in Deploy job
-      - name: Compute commits URL
-        id: commits
-        if: ${{ always() }}
-        run: |
-          if [ -n "${{ github.event.before }}" ] && [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
-            echo "url=https://github.com/${{ github.repository }}/compare/${{ github.event.before }}...${{ github.sha }}" >> $GITHUB_OUTPUT
-          else
-            echo "url=https://github.com/${{ github.repository }}/commit/${{ github.sha }}" >> $GITHUB_OUTPUT
-          fi
-
+      
       - name: Notify Teams (Deploy Succeeded)
         if: ${{ success() }}
         uses: jdcargile/ms-teams-notification@v1.4
@@ -244,8 +235,6 @@ jobs:
           ms-teams-webhook-uri: ${{ secrets.NUCLEUS_DEPLOYMENT_ALERTS_TEAMS_WEBHOOK }}
           notification-summary: |
             ✅ Deploy succeeded: ${{ github.event.repository.name }} → ${{ matrix.stage }}
-            Run #${{ github.run_number }} by @${{ github.actor }}
-            [View Commits](${{ steps.commits.outputs.url }})
           notification-color: 28a745
 
       - name: Notify Teams (Deploy Failed)
@@ -256,8 +245,6 @@ jobs:
           ms-teams-webhook-uri: ${{ secrets.NUCLEUS_DEPLOYMENT_ALERTS_TEAMS_WEBHOOK }}
           notification-summary: |
             ❌ Deploy failed: ${{ github.event.repository.name }} → ${{ matrix.stage }}
-            Run #${{ github.run_number }} by @${{ github.actor }}
-            [View Commits](${{ steps.commits.outputs.url }})
           notification-color: dc3545
 
       - name: Manage Release
