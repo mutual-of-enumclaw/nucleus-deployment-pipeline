@@ -270,16 +270,10 @@ jobs:
           ref: ${{ github.head_ref }}
           token: ${{ secrets.DEPLOY_USER_GITHUB_TOKEN }}
       
-      - name: Embed PlantUML inside Markdown
-        uses: alessandro-marcantoni/puml-markdown@v0.1.1
-
-      - name: Commit changes
-        shell: bash
-        run: |
-            git config --global user.name 'build-user-mutualofenumclaw'
-            git config --global user.email 'build-user-mutualofenumclaw@users.noreply.github.com'
-            git commit -am "Update diagrams" || echo "No changes to commit"
-            git push || echo "No changes to push"
+      - name: Render PlantUML diagrams in Markdown files
+        uses: mutual-of-enumclaw/plantuml-readme-action@main
+        with:
+          camo-proxy: 'true'  # Uses PlantUML web service with Camo proxy
 
       - name: Update Confluence Page with README
         if: ${{ vars.CONFLUENCE_PAGE_ID != '' }}
