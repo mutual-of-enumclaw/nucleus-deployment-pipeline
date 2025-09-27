@@ -99,7 +99,7 @@ jobs:
       - run: npm run test:coverage --if-present
 
       - name: SonarCloud Scan
-        uses: sonarsource/sonarqube-scan-action@v4
+        uses: sonarsource/sonarqube-scan-action@v5
         env:
           GITHUB_TOKEN: ${{ env.GITHUB_TOKEN}}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -224,6 +224,28 @@ jobs:
         run: |
           cd home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}
           ${{ vars.POST_DEPLOY_COMMAND }}
+
+      # 👇 Notifications after everything in Deploy job
+      
+      - name: Notify Teams (Deploy Succeeded)
+        if: ${{ success() }}
+        uses: jdcargile/ms-teams-notification@v1.4
+        with:
+          github-token: ${{ github.token }}
+          ms-teams-webhook-uri: ${{ secrets.NUCLEUS_DEPLOYMENT_ALERTS_TEAMS_WEBHOOK }}
+          notification-summary: |
+            ✅ Deploy succeeded: ${{ github.event.repository.name }} → ${{ matrix.stage }}
+          notification-color: 28a745
+
+      - name: Notify Teams (Deploy Failed)
+        if: ${{ failure() }}
+        uses: jdcargile/ms-teams-notification@v1.4
+        with:
+          github-token: ${{ github.token }}
+          ms-teams-webhook-uri: ${{ secrets.NUCLEUS_DEPLOYMENT_ALERTS_TEAMS_WEBHOOK }}
+          notification-summary: |
+            ❌ Deploy failed: ${{ github.event.repository.name }} → ${{ matrix.stage }}
+          notification-color: dc3545
 
       - name: Manage Release
         uses: mutual-of-enumclaw/action-manage-release@v1

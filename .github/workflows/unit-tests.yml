@@ -96,7 +96,7 @@ jobs:
       - run: npm run test:coverage --if-present
 
       - name: SonarCloud Scan
-        uses: sonarsource/sonarqube-scan-action@v4
+        uses: sonarsource/sonarqube-scan-action@v5
         with:
           projectBaseDir: ${{ github.workspace }}
           args: >
