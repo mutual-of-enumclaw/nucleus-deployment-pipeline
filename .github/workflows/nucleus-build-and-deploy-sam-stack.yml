@@ -277,7 +277,7 @@ jobs:
 
       - name: Update Confluence Page with README
         if: ${{ vars.CONFLUENCE_PAGE_ID != '' }}
-        uses: cupcakearmy/confluence-markdown-sync@v1
+        uses: mutual-of-enumclaw/confluence-markdown-sync@master
         with:
           from: './README.md'
           to: ${{ vars.CONFLUENCE_PAGE_ID }}
