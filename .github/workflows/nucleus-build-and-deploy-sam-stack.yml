@@ -120,6 +120,19 @@ jobs:
         with:
           node-version: ${{ inputs.node-build-version}}
 
+      - name: 'Create .npmrc'
+        shell: bash
+        run: |
+            echo "Creating/Updating .npmrc in $PWD"
+            # Create a new .npmrc if there isn't one there already
+            [ ! -e .npmrc ] && echo "registry=https://moetech.jfrog.io/artifactory/api/npm/nucleus-npm/" > ~/.npmrc
+            [ -e .npmrc ] && cp .npmrc ~/.npmrc && echo "" >> ~/.npmrc
+            echo "//moetech.jfrog.io/artifactory/api/npm/nucleus-npm/:_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> ~/.npmrc
+            echo "always-auth = true" >> ~/.npmrc
+
+      - name: Verify JFrog auth
+        run: npm ping --registry=https://moetech.jfrog.io/artifactory/api/npm/nucleus-npm/
+
       - name: Restore cached dependencies
         uses: actions/cache/restore@v4
         with:
