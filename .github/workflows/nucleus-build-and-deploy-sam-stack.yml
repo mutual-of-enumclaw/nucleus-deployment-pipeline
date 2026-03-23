@@ -44,19 +44,17 @@ jobs:
 
       - name: Generate cache key
         id: cache-key
-        run: echo "key=node-modules-${{ runner.os }}-${{ inputs.node-build-version }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/.npmrc') || 'no-npmrc' }}" >> $GITHUB_OUTPUT
+        run: echo "key=node-modules-${{ runner.os }}-${{ inputs.node-build-version }}-${{ hashFiles('**/package-lock.json') }}" >> $GITHUB_OUTPUT
 
-      - name: Cache .npmrc and node modules
+      - name: Cache node modules
         uses: actions/cache@v4
         id: cache-dependencies
         with:
           path: |
             node_modules
-            ~/.npmrc
           key: ${{ steps.cache-key.outputs.key }}
 
       - name: 'Create .npmrc'
-        if: steps.cache-dependencies.outputs.cache-hit != 'true'
         shell: bash
         run: |
             echo "Creating/Updating .npmrc in $PWD"
@@ -65,6 +63,9 @@ jobs:
             [ -e .npmrc ] && cp .npmrc ~/.npmrc && echo "" >> ~/.npmrc
             echo "//moetech.jfrog.io/artifactory/api/npm/nucleus-npm/:_authToken = ${{ secrets.JFROG_AUTH_TOKEN }}" >> ~/.npmrc
             echo "always-auth = true" >> ~/.npmrc
+
+      - name: Verify JFrog auth
+        run: npm ping --registry=https://moetech.jfrog.io/artifactory/api/npm/nucleus-npm/
 
       - name: Install dependencies
         if: steps.cache-dependencies.outputs.cache-hit != 'true'
@@ -93,7 +94,6 @@ jobs:
         with:
           path: |
             node_modules
-            ~/.npmrc
           key: ${{ needs.setup.outputs.cache-key }}
 
       - run: npm run test:coverage --if-present
@@ -125,7 +125,6 @@ jobs:
         with:
           path: |
             node_modules
-            ~/.npmrc
           key: ${{ needs.setup.outputs.cache-key }}
 
       - name: Configure AWS credentials
@@ -192,7 +191,6 @@ jobs:
         with:
           path: |
             node_modules
-            ~/.npmrc
           key: ${{ needs.setup.outputs.cache-key }}
 
       - name: Configure AWS credentials
