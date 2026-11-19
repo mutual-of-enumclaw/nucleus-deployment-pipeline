@@ -172,7 +172,7 @@ jobs:
       contents: write
     strategy:
       matrix:
-        stage: ${{ fromJson(vars.ENVIRONMENTS_MATRIX) }}
+        stage: [snd]
       fail-fast: false
     runs-on: ubuntu-latest
     environment:
