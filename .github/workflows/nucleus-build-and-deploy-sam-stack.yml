@@ -71,38 +71,38 @@ jobs:
         if: steps.cache-dependencies.outputs.cache-hit != 'true'
         run: npm ci
 
-  # sonar-scan:
-  #   name: "SonarCloud Scan"
-  #   runs-on: ubuntu-latest
-  #   permissions:
-  #     contents: read
-  #   needs: setup
+  sonar-scan:
+    name: "SonarCloud Scan"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    needs: setup
 
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-  #       with:
-  #         fetch-depth: 0
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-  #     - name: set node version
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: ${{ inputs.node-build-version}}
+      - name: set node version
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-build-version}}
 
-  #     - name: Restore cached dependencies
-  #       uses: actions/cache/restore@v4
-  #       with:
-  #         path: |
-  #           node_modules
-  #         key: ${{ needs.setup.outputs.cache-key }}
+      - name: Restore cached dependencies
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            node_modules
+          key: ${{ needs.setup.outputs.cache-key }}
 
-  #     - run: npm run test:coverage --if-present
+      - run: npm run test:coverage --if-present
 
-  #     - name: SonarCloud Scan
-  #       uses: sonarsource/sonarqube-scan-action@v6
-  #       env:
-  #         GITHUB_TOKEN: ${{ env.GITHUB_TOKEN}}
-  #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: SonarCloud Scan
+        uses: sonarsource/sonarqube-scan-action@v6
+        env:
+          GITHUB_TOKEN: ${{ env.GITHUB_TOKEN}}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   build-package:
     name: "Build Package"
