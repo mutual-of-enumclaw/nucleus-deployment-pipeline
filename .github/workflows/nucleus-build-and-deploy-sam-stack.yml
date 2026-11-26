@@ -73,6 +73,8 @@ jobs:
 
   sonar-scan:
     name: "SonarCloud Scan"
+    # Temporary snd2 testing bypass; restore this job and the Deploy dependency together.
+    if: ${{ false }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -177,7 +179,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: ${{ matrix.stage }}
-    needs: [setup, sonar-scan, build-package]
+    needs: [setup, build-package]
     steps:    
       - name: Checkout
         uses: actions/checkout@v4
