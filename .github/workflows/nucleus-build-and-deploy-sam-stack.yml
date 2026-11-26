@@ -146,14 +146,14 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets[inputs.build-aws-access-key-id-name] }}
           aws-secret-access-key: ${{ secrets[inputs.build-aws-secret-access-key-name] }}
-          aws-region: us-west-2
+          aws-region: us-east-1
 
       - name: Prebuild
         if: ${{ inputs.prebuild-command != '' }}
         run: ${{ inputs.prebuild-command }}
 
       - name: Build Package
-        run: npm run build-package -- --environments ${{ vars.ENVIRONMENTS }}
+        run: npm run build-package -- --config-env snd2 --environments snd2
 
       - name: Tar files
         run: tar -cvf build-artifacts.tar ${{ github.workspace }}
@@ -172,7 +172,7 @@ jobs:
       contents: write
     strategy:
       matrix:
-        stage: [snd]
+        stage: [snd2]
       fail-fast: false
     runs-on: ubuntu-latest
     environment:
@@ -222,7 +222,17 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets[vars.AWS_ACCESS_KEY_ID_SECRET_NAME] }}
           aws-secret-access-key: ${{ secrets[vars.AWS_SECRET_ACCESS_KEY_SECRET_NAME] }}
-          aws-region: us-west-2
+          aws-region: us-east-1
+
+      - name: Validate website region
+        if: ${{ vars.WEB_DEPLOYMENT_BUCKET_NAME_PARAM != '' }}
+        env:
+          WEBSITE_REGION: ${{ vars.AWS_REGION }}
+        run: |
+          if [[ "$WEBSITE_REGION" != "us-east-1" ]]; then
+            echo "::error::Website AWS_REGION must be us-east-1 for snd2."
+            exit 1
+          fi
 
       - name: Deploy
         run: |
